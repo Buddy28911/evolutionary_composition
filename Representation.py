@@ -1,3 +1,6 @@
+# Representation.py
+# By Danny Noe
+
 import random
 
 BEATS_P_MEASURE = 4.0
@@ -100,6 +103,12 @@ class Melody:
             new_measure = Measure()
             self.melody_list.append(new_measure)
         return
+
+    def len(self):
+        """
+        Returns the number of measures in the melody as an int
+        """
+        return len(self.melody_list)
 
     def __str__(self):
         """
