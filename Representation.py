@@ -93,22 +93,63 @@ class Melody:
     The number of measures in a melody are defined by MEASURES_P_MELODY.
     The Melody class's only attribute is the melody_list list of measures.
     """
-    def __init__(self):
+    def __init__(self, melody_list = None):
         """
         Initalizes a Melody object with MEASURES_P_MELODY amount of measures
         """
-        self.melody_list = []
-        for i in range(MEASURES_P_MELODY):
-            print(i)
-            new_measure = Measure()
-            self.melody_list.append(new_measure)
-        return
+        if melody_list is None:
+            self.melody_list = []
+            for i in range(MEASURES_P_MELODY):
+                #print(i)
+                new_measure = Measure()
+                self.melody_list.append(new_measure)
+            return
+        else:
+            self.melody_list = melody_list
 
     def len(self):
         """
         Returns the number of measures in the melody as an int
         """
         return len(self.melody_list)
+
+    def copy(self):
+        """
+        Returns a new melody object that is a copy the current melody object
+        """
+        return Melody(melody_list=self.melody_list)
+
+    def cross_mel(self, mel2, change_first_half):
+        """
+        assert(self.len() >= len(new_measure_list))
+        length = self.len()
+        meas_len = len(new_measure_list)
+
+        if change_first_half:
+            for i in range(length - meas_len):
+                self.melody_list[i] = new_measure_list[i]
+        else:
+            list_index = 0
+            for i in range(meas_len, length):
+                self.melody_list[i] = new_measure_list[list_index]
+                list_index += 1
+        """
+        if change_first_half:
+            # Swap first half of melody for mel2's first half
+            end = MEASURES_P_MELODY // 2
+            i = 0
+            while i < end:
+                self.melody_list[i] = mel2.melody_list[i]
+                i += 1
+            pass
+        else:
+            # Swap second half of melody for mel2's second half
+            i = MEASURES_P_MELODY // 2
+            while i < MEASURES_P_MELODY:
+                self.melody_list[i] = mel2.melody_list[i]
+                i += 1
+            pass
+        return
 
     def __str__(self):
         """
