@@ -14,8 +14,8 @@ from deap import tools
 
 import ctcsound
 
-from Representation import Melody
-
+from representation import Melody
+from representation import NOTE_RANGE
 POP_SIZE = 6    # Dictates the number of melodies in a population
 
 def evaluate_music(input_mel):
@@ -49,9 +49,17 @@ def cx_music(input_mel1, input_mel2):
 def mut_music(input_mel):
     """
     Mutation function for music that mutates a given melody: input_mel
+    Mutates a melody by 
     Returns a mutated version of the given melody
     """
-
+    for measure in input_mel:
+        for note in measure:
+            if note.note_pitch == "Rest" and note.beats == 4.0:
+                note.note_pitch = random.choice(NOTE_RANGE)
+                # Reassigns the pitch of a whole rest to a whole note
+                # Note: may want to remove whole notes for short melodies entirely
+            elif random.random() < 0.5:
+                
     return input_mel, 
 
 # Fitness func has one weight, maximizing good melodies

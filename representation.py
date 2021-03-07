@@ -2,12 +2,22 @@
 # By Danny Noe
 
 import random
+import mido
 
 BEATS_P_MEASURE = 4.0
 MEASURES_P_MELODY = 2
 KEY = "C"
-NOTE_RANGE = ["C4", "D4", "E4", "F4", "G4", "A4", "B4", "C5", "D5", "E5", "F5", "G5", "A5", "B5", "C6", "Rest"]
-            # Treble Clef range
+             # Treble Clef range
+NOTE_RANGE = ["C4", "C4#", "D4", "D4#", "E4", "F4", "F4#", "G4", "G4#", "A4", "A4#", "B4", "C5", 
+            "C5#", "D5", "D5#", "E5", "F5", "F5#", "G5", "G5#", "A5", "A5#", "B5", 'C6', "Rest"]
+NOTE_TO_MIDI = {'C4': 48, 'C4#': 49, 'D4': 50, 'D4#': 51, 'E4': 52, 'F4': 53, 'F4#': 54, 'G4': 55,
+             'G4#': 56, 'A4': 57, 'A4#': 58, 'B4': 59, 'C5': 60, 'C5#': 61, 'D5': 62, 'D5#': 63,
+             'E5': 64, 'F5': 65, 'F5#': 66, 'G5': 67, 'G5#': 68, 'A5': 69, 'A5#': 70, 'B5': 71, 
+             'C6': 72, "Rest" : "Rest"}
+MIDI_TO_NOTE = {48: 'C4', 49: 'C4#', 50: 'D4', 51: 'D4#', 52: 'E4', 53: 'F4', 54: 'F4#', 55: 'G4', 
+                56: 'G4#', 57: 'A4', 58: 'A4#', 59: 'B4', 60: 'C5', 61: 'C5#', 62: 'D5', 63: 'D5#', 
+                64: 'E5', 65: 'F5', 66: 'F5#', 67: 'G5', 68: 'G5#', 69: 'A5', 70: 'A5#', 71: 'B5', 
+                72: 'C6', 'Rest': 'Rest'}
 BEAT_VALUES = [4.0, 2.0, 1.0, 0.5, 0.25]
 
 class Note:
@@ -49,6 +59,15 @@ class Note:
         Returns the note's length in beats as a float
         """
         return self.beats
+
+    def pitch_shift(self, increment = 1,  up = True):
+        if up:
+            # Shift pitch up # increment semitones
+            pass
+        else:
+            # Shifts pitch down # increment semitones
+            pass
+        return
 
     def __str__(self):
         """
@@ -161,20 +180,32 @@ class Melody:
         return to_str
             
 
-test_note_1 = Note("C4", 1.0)
-print(test_note_1)
-test_note_2 = Note("Rest", 2.0)
-print(test_note_2)
-rand_note = Note()
-print(rand_note)
-print(rand_note.note_pitch)
+# test_note_1 = Note("C4", 1.0)
+# print(test_note_1)
+# test_note_2 = Note("Rest", 2.0)
+# print(test_note_2)
+# rand_note = Note()
+# print(rand_note)
+# print(rand_note.note_pitch)
 
-FirstM = Measure()
-print("Notes in list:")
-for m_note in FirstM.measure_list:
-    print(m_note)
+# FirstM = Measure()
+# print("Notes in list:")
+# for m_note in FirstM.measure_list:
+#     print(m_note)
 
-print(FirstM)
+# print(FirstM)
 
-mel1 = Melody()
-print(mel1)
+# mel1 = Melody()
+# print(mel1)
+print(mido.get_output_names())
+outport = mido.open_output('IAC Driver Bus 1')
+note = Note(note_pitch="C5", beats=1.0)
+print(note)
+val = NOTE_TO_MIDI[note.get_pitch()]
+msg = mido.Message('note_on', velocity=127, note=val, time=0)
+print(msg)
+outport.send(msg)
+msg2 = mido.Message('note_off', velocity=127, note=val, time=0)
+#outport.send(msg2)
+msg3 = mido.Message('note_on', velocity=127, note=65, time=1)
+outport.send(msg3)
