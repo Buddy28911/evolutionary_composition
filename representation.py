@@ -199,13 +199,42 @@ class Melody:
 # print(mel1)
 print(mido.get_output_names())
 outport = mido.open_output('IAC Driver Bus 1')
-note = Note(note_pitch="C5", beats=1.0)
-print(note)
-val = NOTE_TO_MIDI[note.get_pitch()]
-msg = mido.Message('note_on', velocity=127, note=val, time=0)
-print(msg)
-outport.send(msg)
-msg2 = mido.Message('note_off', velocity=127, note=val, time=0)
-#outport.send(msg2)
-msg3 = mido.Message('note_on', velocity=127, note=65, time=1)
-outport.send(msg3)
+# note = Note(note_pitch="C5", beats=1.0)
+# print(note)
+# val = NOTE_TO_MIDI[note.get_pitch()]
+# msg = mido.Message('note_on', velocity=127, note=val, time=0)
+# print(msg)
+# outport.send(msg)
+# msg2 = mido.Message('note_off', velocity=127, note=val, time=0)
+# print(msg2)
+# outport.send(msg2)
+# msg3 = mido.Message('note_on', velocity=127, note=65, time=1)
+# outport.send(msg3)
+
+
+### MIDI File testing
+from mido import Message, MidiFile, MidiTrack, MetaMessage, bpm2tempo
+mid = MidiFile(type=0)
+track = MidiTrack()
+mid.tracks.append(track)
+track.append(MetaMessage('key_signature', key='C'))
+tempo = bpm2tempo(200)
+track.append(MetaMessage('set_tempo', tempo=tempo, time=0))
+mid.ticks_per_beat = 240
+tim = 240
+for i in range(26):
+    track.append(Message('note_on', note=60+i, velocity=64, time=0))
+    #tim += 64
+    track.append(Message('note_off', note=60+i, velocity=127, time=240))
+    track.append(Message('note_off', note=60+i, velocity=127, time=0))
+    track.append(Message('note_off', note=60+i, velocity=127, time=240))
+
+    #tim += 64
+
+mid.save('./Project/Code/new_mid.mid')
+print(mid.ticks_per_beat)
+
+
+for message in MidiFile('./Project/Code/new_mid.mid').play():
+    print(message)
+    outport.send(message)
