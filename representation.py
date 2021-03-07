@@ -218,6 +218,37 @@ mid = MidiFile(type=0)
 track = MidiTrack()
 mid.tracks.append(track)
 track.append(MetaMessage('key_signature', key='C'))
+tempo = bpm2tempo(100)
+track.append(MetaMessage('set_tempo', tempo=tempo, time=0))
+ticks_per_beat = mid.ticks_per_beat
+mellody1 = Melody()
+for measure in mellody1.melody_list:
+    for note in measure.measure_list:
+        if note.note_pitch != 'Rest':
+            midi_val = NOTE_TO_MIDI[note.note_pitch]
+        else:
+            midi_val = 72
+        beat_val = note.beats * ticks_per_beat
+        beat_val = int(beat_val)
+        print(beat_val)
+        track.append(Message('note_on', note=midi_val, velocity=64, time=0))
+        track.append(Message('note_off', note=midi_val, velocity=127, time=beat_val))
+
+
+mid.save('./Project/Code/new_mid.mid')
+
+for message in MidiFile('./Project/Code/new_mid.mid').play():
+    print(message)
+    outport.send(message)
+
+
+"""
+### MIDI File testing
+from mido import Message, MidiFile, MidiTrack, MetaMessage, bpm2tempo
+mid = MidiFile(type=0)
+track = MidiTrack()
+mid.tracks.append(track)
+track.append(MetaMessage('key_signature', key='C'))
 tempo = bpm2tempo(200)
 track.append(MetaMessage('set_tempo', tempo=tempo, time=0))
 mid.ticks_per_beat = 240
@@ -232,9 +263,8 @@ for i in range(26):
     #tim += 64
 
 mid.save('./Project/Code/new_mid.mid')
-print(mid.ticks_per_beat)
-
 
 for message in MidiFile('./Project/Code/new_mid.mid').play():
     print(message)
     outport.send(message)
+"""
