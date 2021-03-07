@@ -3,6 +3,7 @@
 
 import random
 import mido
+from mido import Message, MidiFile, MidiTrack, MetaMessage, bpm2tempo
 
 BEATS_P_MEASURE = 4.0
 MEASURES_P_MELODY = 2
@@ -179,6 +180,28 @@ class Melody:
             to_str += str(msr)
         return to_str
             
+def melody_to_midi(melody: Melody, filename: str, tempo: int):
+    mid = MidiFile(type=0)
+    track = MidiTrack()
+    mid.tracks.append(track)
+    track.append(MetaMessage('key_signature', key=KEY))
+    tempo = bpm2tempo(tempo)
+    track.append(MetaMessage('set_tempo', tempo=tempo, time=0))
+    ticks_per_beat = mid.ticks_per_beat
+    
+    for measure in melody.melody_list:
+        for note in measure.measure_list:
+            if note.note_pitch != 'Rest':
+                midi_val = NOTE_TO_MIDI[note.note_pitch]
+            else:
+                midi_val = 72
+            beat_val = note.beats * ticks_per_beat
+            beat_val = int(beat_val)
+            print(beat_val)
+            track.append(Message('note_on', note=midi_val, velocity=64, time=0))
+            track.append(Message('note_off', note=midi_val, velocity=127, time=beat_val))
+    mid.save(filename)
+    return
 
 # test_note_1 = Note("C4", 1.0)
 # print(test_note_1)
@@ -213,30 +236,30 @@ outport = mido.open_output('IAC Driver Bus 1')
 
 
 ### MIDI File testing
-from mido import Message, MidiFile, MidiTrack, MetaMessage, bpm2tempo
-mid = MidiFile(type=0)
-track = MidiTrack()
-mid.tracks.append(track)
-track.append(MetaMessage('key_signature', key='C'))
-tempo = bpm2tempo(100)
-track.append(MetaMessage('set_tempo', tempo=tempo, time=0))
-ticks_per_beat = mid.ticks_per_beat
-mellody1 = Melody()
-for measure in mellody1.melody_list:
-    for note in measure.measure_list:
-        if note.note_pitch != 'Rest':
-            midi_val = NOTE_TO_MIDI[note.note_pitch]
-        else:
-            midi_val = 72
-        beat_val = note.beats * ticks_per_beat
-        beat_val = int(beat_val)
-        print(beat_val)
-        track.append(Message('note_on', note=midi_val, velocity=64, time=0))
-        track.append(Message('note_off', note=midi_val, velocity=127, time=beat_val))
+# mid = MidiFile(type=0)
+# track = MidiTrack()
+# mid.tracks.append(track)
+# track.append(MetaMessage('key_signature', key='C'))
+# tempo = bpm2tempo(100)
+# track.append(MetaMessage('set_tempo', tempo=tempo, time=0))
+# ticks_per_beat = mid.ticks_per_beat
+# mellody1 = Melody()
+# for measure in mellody1.melody_list:
+#     for note in measure.measure_list:
+#         if note.note_pitch != 'Rest':
+#             midi_val = NOTE_TO_MIDI[note.note_pitch]
+#         else:
+#             midi_val = 72
+#         beat_val = note.beats * ticks_per_beat
+#         beat_val = int(beat_val)
+#         print(beat_val)
+#         track.append(Message('note_on', note=midi_val, velocity=64, time=0))
+#         track.append(Message('note_off', note=midi_val, velocity=127, time=beat_val))
 
+# mid.save('./Project/Code/new_mid.mid')
 
-mid.save('./Project/Code/new_mid.mid')
-
+melody = Melody()
+melody_to_midi(melody, './Project/Code/new_mid.mid', 164)
 for message in MidiFile('./Project/Code/new_mid.mid').play():
     print(message)
     outport.send(message)
