@@ -133,18 +133,7 @@ class Melody:
 
     def cross_mel(self, mel2, change_first_half):
         """
-        assert(self.len() >= len(new_measure_list))
-        length = self.len()
-        meas_len = len(new_measure_list)
-
-        if change_first_half:
-            for i in range(length - meas_len):
-                self.melody_list[i] = new_measure_list[i]
-        else:
-            list_index = 0
-            for i in range(meas_len, length):
-                self.melody_list[i] = new_measure_list[list_index]
-                list_index += 1
+        
         """
         if change_first_half:
             # Swap first half of melody for mel2's first half
@@ -198,13 +187,13 @@ def melody_to_midi(melody: Melody, filename: str, tempo: int):
     mid.save(filename)
     return
 
-outport = mido.open_output(None)
-melody = Melody()
-print(melody)
-melody_to_midi(melody, './Project/Code/new_mid.mid', 164)
-for message in MidiFile('./Project/Code/new_mid.mid').play():
-    print(message)
-    outport.send(message)
+# outport = mido.open_output(None)
+# melody = Melody()
+# print(melody)
+# melody_to_midi(melody, './Project/Code/new_mid.mid', 164)
+# for message in MidiFile('./Project/Code/new_mid.mid').play():
+#     print(message)
+#     outport.send(message)
 """
 # test_note_1 = Note("C4", 1.0)
 # print(test_note_1)
