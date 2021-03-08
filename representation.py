@@ -11,14 +11,14 @@ KEY = "C"
              # Treble Clef range
 NOTE_RANGE = ["C4", "C4#", "D4", "D4#", "E4", "F4", "F4#", "G4", "G4#", "A4", "A4#", "B4", "C5", 
             "C5#", "D5", "D5#", "E5", "F5", "F5#", "G5", "G5#", "A5", "A5#", "B5", 'C6', "Rest"]
-NOTE_TO_MIDI = {'C4': 48, 'C4#': 49, 'D4': 50, 'D4#': 51, 'E4': 52, 'F4': 53, 'F4#': 54, 'G4': 55,
-             'G4#': 56, 'A4': 57, 'A4#': 58, 'B4': 59, 'C5': 60, 'C5#': 61, 'D5': 62, 'D5#': 63,
-             'E5': 64, 'F5': 65, 'F5#': 66, 'G5': 67, 'G5#': 68, 'A5': 69, 'A5#': 70, 'B5': 71, 
-             'C6': 72, "Rest" : "Rest"}
-MIDI_TO_NOTE = {48: 'C4', 49: 'C4#', 50: 'D4', 51: 'D4#', 52: 'E4', 53: 'F4', 54: 'F4#', 55: 'G4', 
-                56: 'G4#', 57: 'A4', 58: 'A4#', 59: 'B4', 60: 'C5', 61: 'C5#', 62: 'D5', 63: 'D5#', 
-                64: 'E5', 65: 'F5', 66: 'F5#', 67: 'G5', 68: 'G5#', 69: 'A5', 70: 'A5#', 71: 'B5', 
-                72: 'C6', 'Rest': 'Rest'}
+NOTE_TO_MIDI = {'C4': 60, 'C4#': 61, 'D4': 62, 'D4#': 63, 'E4': 64, 'F4': 65, 'F4#': 66, 'G4': 67, 
+                'G4#': 68, 'A4': 69, 'A4#': 70, 'B4': 71, 'C5': 72, 'C5#': 73, 'D5': 74, 'D5#': 75, 
+                'E5': 76, 'F5': 77, 'F5#': 78, 'G5': 79, 'G5#': 80, 'A5': 81, 'A5#': 82, 'B5': 83, 
+                'C6': 84, 'Rest': 'Rest'}
+MIDI_TO_NOTE = {60: 'C4', 61: 'C4#', 62: 'D4', 63: 'D4#', 64: 'E4', 65: 'F4', 66: 'F4#', 67: 'G4', 
+                68: 'G4#', 69: 'A4', 70: 'A4#', 71: 'B4', 72: 'C5', 73: 'C5#', 74: 'D5', 75: 'D5#', 
+                76: 'E5', 77: 'F5', 78: 'F5#', 79: 'G5', 80: 'G5#', 81: 'A5', 82: 'A5#', 83: 'B5', 
+                84: 'C6', 'Rest': 'Rest'}
 BEAT_VALUES = [4.0, 2.0, 1.0, 0.5, 0.25]
 
 class Note:
@@ -203,6 +203,8 @@ def melody_to_midi(melody: Melody, filename: str, tempo: int):
     mid.save(filename)
     return
 
+
+"""
 # test_note_1 = Note("C4", 1.0)
 # print(test_note_1)
 # test_note_2 = Note("Rest", 2.0)
@@ -220,8 +222,8 @@ def melody_to_midi(melody: Melody, filename: str, tempo: int):
 
 # mel1 = Melody()
 # print(mel1)
-print(mido.get_output_names())
-outport = mido.open_output('IAC Driver Bus 1')
+#print(mido.get_output_names())
+#outport = mido.open_output('IAC Driver Bus 1')
 # note = Note(note_pitch="C5", beats=1.0)
 # print(note)
 # val = NOTE_TO_MIDI[note.get_pitch()]
@@ -258,14 +260,14 @@ outport = mido.open_output('IAC Driver Bus 1')
 
 # mid.save('./Project/Code/new_mid.mid')
 
-melody = Melody()
-melody_to_midi(melody, './Project/Code/new_mid.mid', 164)
-for message in MidiFile('./Project/Code/new_mid.mid').play():
-    print(message)
-    outport.send(message)
+# melody = Melody()
+# melody_to_midi(melody, './Project/Code/new_mid.mid', 164)
+# for message in MidiFile('./Project/Code/new_mid.mid').play():
+#     print(message)
+#     outport.send(message)
 
 
-"""
+
 ### MIDI File testing
 from mido import Message, MidiFile, MidiTrack, MetaMessage, bpm2tempo
 mid = MidiFile(type=0)
