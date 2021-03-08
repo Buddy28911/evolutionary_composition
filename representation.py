@@ -8,18 +8,20 @@ from mido import Message, MidiFile, MidiTrack, MetaMessage, bpm2tempo
 BEATS_P_MEASURE = 4.0
 MEASURES_P_MELODY = 2
 KEY = "C"
-             # Treble Clef range
 NOTE_RANGE = ["C4", "C4#", "D4", "D4#", "E4", "F4", "F4#", "G4", "G4#", "A4", "A4#", "B4", "C5", 
             "C5#", "D5", "D5#", "E5", "F5", "F5#", "G5", "G5#", "A5", "A5#", "B5", 'C6', "Rest"]
+
 NOTE_TO_MIDI = {'C4': 60, 'C4#': 61, 'D4': 62, 'D4#': 63, 'E4': 64, 'F4': 65, 'F4#': 66, 'G4': 67, 
                 'G4#': 68, 'A4': 69, 'A4#': 70, 'B4': 71, 'C5': 72, 'C5#': 73, 'D5': 74, 'D5#': 75, 
                 'E5': 76, 'F5': 77, 'F5#': 78, 'G5': 79, 'G5#': 80, 'A5': 81, 'A5#': 82, 'B5': 83, 
-                'C6': 84, 'Rest': 'Rest'}
+                'C6': 84, 'Rest': 128}
+
 MIDI_TO_NOTE = {60: 'C4', 61: 'C4#', 62: 'D4', 63: 'D4#', 64: 'E4', 65: 'F4', 66: 'F4#', 67: 'G4', 
                 68: 'G4#', 69: 'A4', 70: 'A4#', 71: 'B4', 72: 'C5', 73: 'C5#', 74: 'D5', 75: 'D5#', 
                 76: 'E5', 77: 'F5', 78: 'F5#', 79: 'G5', 80: 'G5#', 81: 'A5', 82: 'A5#', 83: 'B5', 
-                84: 'C6', 'Rest': 'Rest'}
-BEAT_VALUES = [4.0, 2.0, 1.0, 0.5, 0.25]
+                84: 'C6', 128: 'Rest'}
+
+BEAT_VALUES = [4.0, 2.0, 1.0, 0.5, 0.25] ##Note: May remove whole notes
 
 class Note:
     """
@@ -27,14 +29,15 @@ class Note:
     A note_pitch which is a string representing the pitch of the note
     A beats float representing the length of the note. Currently supports: whole, half, quarter, eighth and sixteenth notes
     """
-    def __init__(self, note_pitch: str = None, beats: float = None):
+    def __init__(self, note_pitch: int = None, beats: float = None):
         """
         Initializes a Note class member. Can be initialized with specific values or have
         its attributes randomly assigned upon initialization.
         """
 
         if note_pitch is None:
-            note_pitch = random.choice(NOTE_RANGE) # Assign note a value if none is given
+            note_str = random.choice(NOTE_RANGE)
+            note_pitch = NOTE_TO_MIDI[note_str] # Assign note a value if none is given
         elif note_pitch not in NOTE_RANGE:
             raise Exception("Error: %s Out of note range and not a rest", note_pitch)
             # Ensures a given pitch is in the define range
@@ -49,24 +52,13 @@ class Note:
         self.beats = beats
         return
 
-    def get_pitch(self):
-        """
-        Returns the notes pitch value as a str
-        """
-        return self.note_pitch
-
-    def get_beats(self):
-        """
-        Returns the note's length in beats as a float
-        """
-        return self.beats
-
     def pitch_shift(self, increment = 1,  up = True):
         if up:
             # Shift pitch up # increment semitones
-            pass
+            self.note_pitch += increment
         else:
             # Shifts pitch down # increment semitones
+            self.note_pitch -= increment
             pass
         return
 
@@ -74,7 +66,7 @@ class Note:
         """
         To string method for printing notes. For debugging
         """
-        return "Pitch: " + self.note_pitch + "| Beats: " + str(self.beats)
+        return "Pitch: " + MIDI_TO_NOTE[self.note_pitch] + "| Beats: " + str(self.beats)
 
 class Measure:
     """
@@ -191,19 +183,28 @@ def melody_to_midi(melody: Melody, filename: str, tempo: int):
     
     for measure in melody.melody_list:
         for note in measure.measure_list:
-            if note.note_pitch != 'Rest':
-                midi_val = NOTE_TO_MIDI[note.note_pitch]
-            else:
-                midi_val = 72
             beat_val = note.beats * ticks_per_beat
             beat_val = int(beat_val)
-            print(beat_val)
-            track.append(Message('note_on', note=midi_val, velocity=64, time=0))
-            track.append(Message('note_off', note=midi_val, velocity=127, time=beat_val))
+            if note.note_pitch == 128:
+                # Rest
+                track.append(Message('note_off', note=60, velocity=127, time=0))
+                track.append(Message('note_off', note=60, velocity=127, time=beat_val))
+
+            else:
+                # Note on
+                track.append(Message('note_on', note=note.note_pitch, velocity=64, time=0))
+                track.append(Message('note_off', note=note.note_pitch, velocity=127, time=beat_val))
+
     mid.save(filename)
     return
 
-
+outport = mido.open_output(None)
+melody = Melody()
+print(melody)
+melody_to_midi(melody, './Project/Code/new_mid.mid', 164)
+for message in MidiFile('./Project/Code/new_mid.mid').play():
+    print(message)
+    outport.send(message)
 """
 # test_note_1 = Note("C4", 1.0)
 # print(test_note_1)

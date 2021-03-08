@@ -1,5 +1,3 @@
-def test_me():
-    print("Hello World!")
 # Genetic Algorithm file
 # By Danny Noe
 
