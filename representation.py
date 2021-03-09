@@ -8,6 +8,7 @@ from mido import Message, MidiFile, MidiTrack, MetaMessage, bpm2tempo
 BEATS_P_MEASURE = 4.0
 MEASURES_P_MELODY = 2
 KEY = "C"
+TEMPO = 120 # BPM
 NOTE_RANGE = ["C4", "C4#", "D4", "D4#", "E4", "F4", "F4#", "G4", "G4#", "A4", "A4#", "B4", "C5", 
             "C5#", "D5", "D5#", "E5", "F5", "F5#", "G5", "G5#", "A5", "A5#", "B5", 'C6', "Rest"]
 
@@ -21,7 +22,7 @@ MIDI_TO_NOTE = {60: 'C4', 61: 'C4#', 62: 'D4', 63: 'D4#', 64: 'E4', 65: 'F4', 66
                 76: 'E5', 77: 'F5', 78: 'F5#', 79: 'G5', 80: 'G5#', 81: 'A5', 82: 'A5#', 83: 'B5', 
                 84: 'C6', 128: 'Rest'}
 
-BEAT_VALUES = [4.0, 2.0, 1.0, 0.5, 0.25] ##Note: May remove whole notes
+BEAT_VALUES = [2.0, 1.0, 0.5, 0.25] # Note: Whole notes have been removed for now
 
 class Note:
     """
@@ -186,6 +187,38 @@ def melody_to_midi(melody: Melody, filename: str, tempo: int):
 
     mid.save(filename)
     return
+
+def play(melody: Melody, outport = None):
+    
+    mid = MidiFile(type=0)
+    track = MidiTrack()
+    mid.tracks.append(track)
+    track.append(MetaMessage('key_signature', key=KEY))
+    tempo = bpm2tempo(TEMPO)
+    track.append(MetaMessage('set_tempo', tempo=tempo, time=0))
+    ticks_per_beat = mid.ticks_per_beat
+    
+    for measure in melody.melody_list:
+        for note in measure.measure_list:
+            beat_val = note.beats * ticks_per_beat
+            beat_val = int(beat_val)
+            if note.note_pitch == 128:
+                # Rest
+                track.append(Message('note_off', note=60, velocity=127, time=0))
+                track.append(Message('note_off', note=60, velocity=127, time=beat_val))
+
+            else:
+                # Note on
+                track.append(Message('note_on', note=note.note_pitch, velocity=64, time=0))
+                track.append(Message('note_off', note=note.note_pitch, velocity=127, time=beat_val))
+    
+    outport = mido.open_output(outport)
+    for message in mid.play():
+        outport.send(message)
+    return
+
+# melody = Melody()
+# play(melody)
 
 # outport = mido.open_output(None)
 # melody = Melody()
