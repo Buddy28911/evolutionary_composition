@@ -64,19 +64,49 @@ creator.create("Melody", Melody, fitness=creator.FitnessMax)
 
 toolbox = base.Toolbox()
 toolbox.register("population", tools.initRepeat, list, creator.Melody)
+toolbox.register("evaluate", evaluate_music)
+toolbox.register("mate", cx_music)
+toolbox.register("mutate", mut_music)
+toolbox.register("select", tools.selNSGA2)
+
+def main():
+    print("Begining")
+    NGEN = 10   # Num generations
+    MU = 2      # Num of individuals to select for next generation
+    LAMBDA = 6  # The number of children to produce at each generation
+    CXPB = 0.7  # Probability than an offspring is produced by crossover
+    MUTPB = 0.2 # Probability that an offspring is produced by mutation
+    
+    population = toolbox.population(n=POP_SIZE)
+    hall_of_fame = tools.ParetoFront()
+
+    # Stats
+    stats = tools.Statistics(lambda ind: ind.fitness.values)
+    stats.register("avg", numpy.mean, axis=0)
+    stats.register("std", numpy.std, axis=0)
+    stats.register("min", numpy.min, axis=0)
+    stats.register("max", numpy.max, axis=0)
+
+    algorithms.eaMuPlusLambda(population, toolbox, MU, LAMBDA, CXPB, MUTPB, NGEN, stats, hall_of_fame)
+
+    return population, stats, hall_of_fame
+
+
+if __name__ == "__main__":
+    main()
+
+
+"""
+Backup/test code things:
 
 the_populatation = toolbox.population(n=POP_SIZE)
 print(the_populatation)
-
 i = 0
 for mel in the_populatation:
     print("Playing melody:", i)
     i+=1
     tup = evaluate_music(mel)
     print(tup)
-
-"""
-Backup/test code things:
 
 test_mel = Melody()
 print(test_mel)
