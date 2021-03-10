@@ -120,6 +120,8 @@ class Melody:
         else:
             self.melody_list = melody_list
 
+        return
+
     def len(self):
         """
         Returns the number of measures in the melody as an int

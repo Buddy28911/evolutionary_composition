@@ -21,6 +21,7 @@ def evaluate_music(input_mel):
     """
     play(input_mel) # Need function to play each melody for user
     usr_rating = input("Did you enjoy that little diddy? Please rate from 0-5 (ints only) ")
+    
     return int(usr_rating),
 
 def cx_music(input_mel1, input_mel2):
@@ -39,7 +40,7 @@ def cx_music(input_mel1, input_mel2):
     # Child 2
     #print("Child 2 Before ", str(input_mel2))
     input_mel2.cross_mel(mel_copy, False)
-    print("After ", str(input_mel2))
+    #print("After ", str(input_mel2))
     return input_mel1, input_mel2
 
 def mut_music(input_mel: Melody):
@@ -50,12 +51,13 @@ def mut_music(input_mel: Melody):
     """
     for measure in input_mel.melody_list:
         for note in measure.measure_list:
-            if random.random() < 0.5 and note.note_pitch != 84:
-                note.pitch_shift()
-            elif note.note_pitch != 60:
-                note.pitch_shift(up=False)
+            if random.random() < 0.5:
+                if note.note_pitch != 84 and note.note_pitch != 128:
+                    note.pitch_shift()
             else:
-                return
+                if note.note_pitch != 60 and note.note_pitch != 128:
+                    note.pitch_shift(up=False)
+
     return input_mel, 
 
 # Fitness func has one weight, maximizing good melodies
