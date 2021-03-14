@@ -91,10 +91,10 @@ toolbox.register("select", tools.selNSGA2)
 def main():
     print("Begining")
     NGEN = 10   # Num generations
-    MU = 2      # Num of individuals to select for next generation
+    MU = 3      # Num of individuals to select for next generation
     LAMBDA = 6  # The number of children to produce at each generation
     CXPB = 0.7  # Probability than an offspring is produced by crossover
-    MUTPB = 0.2 # Probability that an offspring is produced by mutation
+    MUTPB = 0.3 # Probability that an offspring is produced by mutation
     
     population = toolbox.population(n=POP_SIZE)
     hall_of_fame = tools.ParetoFront()
@@ -108,6 +108,7 @@ def main():
 
     algorithms.eaMuPlusLambda(population, toolbox, MU, LAMBDA, CXPB, MUTPB, NGEN, stats, hall_of_fame)
 
+    print(NGEN, " generations completed.")
     return population, stats, hall_of_fame
 
 
