@@ -28,6 +28,7 @@ def example():
 
 from representation import Melody
 from representation import play
+from representation import melody_to_midi
 
 def evaluate_music(input_mel):
     """
@@ -42,6 +43,8 @@ def evaluate_music(input_mel):
         if usr_string.lower() == "replay":
             print("Playing Melody ...")
             play(input_mel)
+        elif usr_string.lower() == "save":
+            melody_to_midi(input_mel, "program_melody.mid", 80)
         else:
             try:
                 usr_rating = int(usr_string)
@@ -55,6 +58,25 @@ def evaluate_music(input_mel):
 
     return usr_rating,
 
-melody = Melody()
-ret_tup = evaluate_music(melody)
-print(ret_tup)
+#melody = Melody()
+#ret_tup = evaluate_music(melody)
+#print(ret_tup)
+import mido
+from mido import Message, MidiFile, MidiTrack, MetaMessage, bpm2tempo, second2tick
+
+outport = mido.open_output(None)
+#melody = Melody()
+#print(melody)
+#melody_to_midi(melody, './Project/Code/new_mid.mid', 164)
+mid_file = MidiFile('/Users/dannynoe/Documents/URI/CSC 499/Project/Code/midi_out/program_melody.mid')
+
+# for message in mid_file.play():
+#     print(message)
+#     outport.send(message)
+
+print(mid_file.length)
+s2t = second2tick(mid_file.length)
+print(s2t)
+
+
+print("Done.")

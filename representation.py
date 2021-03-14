@@ -24,13 +24,15 @@ MIDI_TO_NOTE = {60: 'C4', 61: 'C4#', 62: 'D4', 63: 'D4#', 64: 'E4', 65: 'F4', 66
 
 BEAT_VALUES = [2.0, 1.0, 0.5, 0.25] # Note: Whole notes have been removed for now
 
+VELOCITY_RANGE = [53, 64, 80, 96] # MP, MF, F, FF
+
 class Note:
     """
     The Note class represents a western music note. It has two attributes.
     A note_pitch which is a string representing the pitch of the note
     A beats float representing the length of the note. Currently supports: whole, half, quarter, eighth and sixteenth notes
     """
-    def __init__(self, note_pitch: int = None, beats: float = None):
+    def __init__(self, note_pitch: int = None, beats: float = None, velocity: int = None):
         """
         Initializes a Note class member. Can be initialized with specific values or have
         its attributes randomly assigned upon initialization.
@@ -49,8 +51,14 @@ class Note:
             raise Exception("Error: %f Invalid number of beats", beats)
             # Ensures a given beat is within range
 
+        if velocity is None:
+            velocity = random.choice(VELOCITY_RANGE)
+        elif velocity < 0 or velocity > 127:
+            raise Exception("Error: Velocity out of bounds. Range 0-127")
+
         self.note_pitch = note_pitch
         self.beats = beats
+        self.velocity = velocity
         return
 
     def pitch_shift(self, increment = 1,  up = True):
@@ -67,7 +75,7 @@ class Note:
         """
         To string method for printing notes. For debugging
         """
-        return "Pitch: " + MIDI_TO_NOTE[self.note_pitch] + "| Beats: " + str(self.beats)
+        return "Pitch: " + MIDI_TO_NOTE[self.note_pitch] + " | Beats: " + str(self.beats) + " | Velocity: " + str(self.velocity)
 
 class Measure:
     """
@@ -179,14 +187,14 @@ def melody_to_midi(melody: Melody, filename: str, tempo: int):
             beat_val = int(beat_val)
             if note.note_pitch == 128:
                 # Rest
-                track.append(Message('note_off', note=60, velocity=127, time=0))
-                track.append(Message('note_off', note=60, velocity=127, time=beat_val))
+                track.append(Message('note_off', note=60, velocity=note.velocity, time=0))
+                track.append(Message('note_off', note=60, velocity=note.velocity, time=beat_val))
 
             else:
                 # Note on
-                track.append(Message('note_on', note=note.note_pitch, velocity=64, time=0))
-                track.append(Message('note_off', note=note.note_pitch, velocity=127, time=beat_val))
-
+                track.append(Message('note_on', note=note.note_pitch, velocity=note.velocity, time=0))
+                track.append(Message('note_off', note=note.note_pitch, velocity=note.velocity, time=beat_val))
+    filename = "./midi_out/" + filename
     mid.save(filename)
     return
 
@@ -204,15 +212,16 @@ def play(melody: Melody, outport = None):
         for note in measure.measure_list:
             beat_val = note.beats * ticks_per_beat
             beat_val = int(beat_val)
+            
             if note.note_pitch == 128:
                 # Rest
-                track.append(Message('note_off', note=60, velocity=127, time=0))
-                track.append(Message('note_off', note=60, velocity=127, time=beat_val))
+                track.append(Message('note_off', note=60, velocity=note.velocity, time=0))
+                track.append(Message('note_off', note=60, velocity=note.velocity, time=beat_val))
 
             else:
                 # Note on
-                track.append(Message('note_on', note=note.note_pitch, velocity=64, time=0))
-                track.append(Message('note_off', note=note.note_pitch, velocity=127, time=beat_val))
+                track.append(Message('note_on', note=note.note_pitch, velocity=note.velocity, time=0))
+                track.append(Message('note_off', note=note.note_pitch, velocity=note.velocity, time=beat_val))
     
     outport = mido.open_output(outport)
     for message in mid.play():
