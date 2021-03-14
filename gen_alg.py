@@ -19,10 +19,27 @@ def evaluate_music(input_mel):
     """
     Evaluation function for music that evaluates a given melody
     """
+    print("Playing Melody ...")
     play(input_mel) # Need function to play each melody for user
-    usr_rating = input("Did you enjoy that little diddy? Please rate from 0-5 (ints only) ")
     
-    return int(usr_rating),
+    while True:
+        # Handle the user's input
+        usr_string = input("Did you enjoy that little diddy? Please rate from 0-5 (ints only). To hear it again type replay: ")
+        if usr_string.lower() == "replay":
+            print("Playing Melody ...")
+            play(input_mel)
+        else:
+            try:
+                usr_rating = int(usr_string)
+            except ValueError:
+                print("Error: Invalid input. Please rate the melody from 0-5 or enter replay to hear it again: ")
+            else:
+                if usr_rating < 0 or usr_rating > 5:
+                    print("Error: Rating out of bounds. Please rate the melody from 0-5")
+                else:
+                    break
+
+    return usr_rating,
 
 def cx_music(input_mel1, input_mel2):
     """
