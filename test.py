@@ -62,21 +62,62 @@ def evaluate_music(input_mel):
 #ret_tup = evaluate_music(melody)
 #print(ret_tup)
 import mido
-from mido import Message, MidiFile, MidiTrack, MetaMessage, bpm2tempo, second2tick
+from mido import Message, MidiFile, MidiTrack, MetaMessage, bpm2tempo, second2tick, tempo2bpm
+from representation import Note, MIDI_TO_NOTE
 
 outport = mido.open_output(None)
-#melody = Melody()
+melody = Melody()
+#play(melody)
 #print(melody)
-#melody_to_midi(melody, './Project/Code/new_mid.mid', 164)
+melody_to_midi(melody, 'program_melody.mid', 100)
 mid_file = MidiFile('/Users/dannynoe/Documents/URI/CSC 499/Project/Code/midi_out/program_melody.mid')
 
-# for message in mid_file.play():
-#     print(message)
-#     outport.send(message)
+
+tempo = 0
+key_signature = ""
+for message in mid_file.play(True):
+    print(message)
+    if message.is_meta:
+        print("meta")
+        if message.type == 'key_signature':
+            key_signature = message.key
+        elif message.type == 'set_tempo':
+            tempo = message.tempo
+    else:
+        break
+        #outport.send(message)
+
+
+# Convert MIDI time to micro-seconds 60000 / (BPM * PPQ) PPQ = ticks_per_beat
 
 print(mid_file.length)
-s2t = second2tick(mid_file.length)
-print(s2t)
-
+print(mid_file.ticks_per_beat)
+ticks_per_beat = mid_file.ticks_per_beat
+tempo = int(tempo2bpm(tempo) + 0.5)
+print(tempo)
+seconds_per_tick =  (60000 / (tempo * ticks_per_beat)) / 1000000
+print(seconds_per_tick)
+note_list = []
+for message in mid_file:
+    print(message)
+    if message.is_meta:
+        print("meta")
+        pass
+    else:
+        print("Note")
+        if message.time != 0:
+            n_p = message.note
+            vel = message.velocity
+            time = message.time
+            ticks = time / seconds_per_tick
+            beats = ticks / ticks_per_beat
+            beats = beats / 1000
+            print(beats)
+            note_list.append(Note(n_p, beats, vel))
+        else:
+            pass
+        
+for note in note_list:
+    print(note)
 
 print("Done.")

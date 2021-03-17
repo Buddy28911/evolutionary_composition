@@ -41,8 +41,8 @@ class Note:
         if note_pitch is None:
             note_str = random.choice(NOTE_RANGE)
             note_pitch = NOTE_TO_MIDI[note_str] # Assign note a value if none is given
-        elif note_pitch not in NOTE_RANGE:
-            raise Exception("Error: %s Out of note range and not a rest", note_pitch)
+        #elif note_pitch not in NOTE_RANGE:
+            #raise Exception("Error: %s Out of note range and not a rest", note_pitch)
             # Ensures a given pitch is in the define range
 
         if beats is None:
