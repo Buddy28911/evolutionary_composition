@@ -32,7 +32,7 @@ class Note:
     A note_pitch which is a string representing the pitch of the note
     A beats float representing the length of the note. Currently supports: whole, half, quarter, eighth and sixteenth notes
     """
-    def __init__(self, note_pitch: int = None, beats: float = None, velocity: int = None):
+    def __init__(self, note_pitch = None, beats: float = None, velocity: int = None):
         """
         Initializes a Note class member. Can be initialized with specific values or have
         its attributes randomly assigned upon initialization.
@@ -41,12 +41,21 @@ class Note:
         if note_pitch is None:
             note_str = random.choice(NOTE_RANGE)
             note_pitch = NOTE_TO_MIDI[note_str] # Assign note a value if none is given
-        #elif note_pitch not in NOTE_RANGE:
-            #raise Exception("Error: %s Out of note range and not a rest", note_pitch)
-            # Ensures a given pitch is in the define range
+        else:
+            if type(note_pitch) is str:
+                if note_pitch not in NOTE_RANGE:
+                    raise Exception("Error:", note_pitch, " out of note range and not a rest")
+                    # Ensures a given pitch is in the define range
+                else:
+                    note_pitch = NOTE_TO_MIDI[note_pitch]
+            elif type(note_pitch) is int:
+                if note_pitch not in MIDI_TO_NOTE:
+                    raise Exception("Error:", note_pitch, " out of note range and not a rest")
+            else:
+                raise Exception("Error:", note_pitch, " must be a string or int")
 
         if beats is None:
-            beats = random.choice(BEAT_VALUES)    # Assign the note a length if non is given
+            beats = random.choice(BEAT_VALUES)    # Assign the note a length if none is given
         elif beats not in BEAT_VALUES:
             raise Exception("Error: %f Invalid number of beats", beats)
             # Ensures a given beat is within range

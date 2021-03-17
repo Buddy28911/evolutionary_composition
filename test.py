@@ -69,8 +69,9 @@ outport = mido.open_output(None)
 melody = Melody()
 #play(melody)
 #print(melody)
-melody_to_midi(melody, 'program_melody.mid', 100)
-mid_file = MidiFile('/Users/dannynoe/Documents/URI/CSC 499/Project/Code/midi_out/program_melody.mid')
+original_str = str(melody)
+melody_to_midi(melody, 'program_melody2.mid', 100)
+mid_file = MidiFile('/Users/dannynoe/Documents/URI/CSC 499/Project/Code/midi_out/program_melody2.mid')
 
 
 tempo = 0
@@ -98,6 +99,8 @@ print(tempo)
 seconds_per_tick =  (60000 / (tempo * ticks_per_beat)) / 1000000
 print(seconds_per_tick)
 note_list = []
+rest = False
+sum_beats = 0.0
 for message in mid_file:
     print(message)
     if message.is_meta:
@@ -106,18 +109,34 @@ for message in mid_file:
     else:
         print("Note")
         if message.time != 0:
-            n_p = message.note
+            if rest:
+                pass
+                n_p = "Rest"
+                rest = False
+            else:
+                n_p = message.note
             vel = message.velocity
             time = message.time
             ticks = time / seconds_per_tick
             beats = ticks / ticks_per_beat
             beats = beats / 1000
-            print(beats)
+            beats = round(beats, 2)
+            sum_beats += beats
             note_list.append(Note(n_p, beats, vel))
+        elif message.type == 'note_off':
+            rest = True
         else:
             pass
-        
+
+read_str = ""        
 for note in note_list:
+    read_str += str(note)
     print(note)
 
+print("Original melody")
+print(original_str)
+print("Read string")
+print(read_str)
+
+print(sum_beats)
 print("Done.")
