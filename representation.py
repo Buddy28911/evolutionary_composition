@@ -3,14 +3,14 @@
 
 import random
 import mido
-from mido import Message, MidiFile, MidiTrack, MetaMessage, bpm2tempo
+from mido import Message, MidiFile, MidiTrack, MetaMessage, bpm2tempo, tempo2bpm
 
 BEATS_P_MEASURE = 4.0
 MEASURES_P_MELODY = 2
 KEY = "C"
 TEMPO = 90 # BPM
 NOTE_RANGE = ["C4", "C4#", "D4", "D4#", "E4", "F4", "F4#", "G4", "G4#", "A4", "A4#", "B4", "C5", 
-            "C5#", "D5", "D5#", "E5", "F5", "F5#", "G5", "G5#", "A5", "A5#", "B5", 'C6', "Rest"]
+            "C5#", "D5", "D5#", "E5", "F5", "F5#", "G5", "G5#", "A5", "A5#", "B5", 'C6', "Rest", "Rest", "Rest", "Rest"]
 
 NOTE_TO_MIDI = {'C4': 60, 'C4#': 61, 'D4': 62, 'D4#': 63, 'E4': 64, 'F4': 65, 'F4#': 66, 'G4': 67, 
                 'G4#': 68, 'A4': 69, 'A4#': 70, 'B4': 71, 'C5': 72, 'C5#': 73, 'D5': 74, 'D5#': 75, 
@@ -111,7 +111,6 @@ class Measure:
         else:
             total_beats = 0.0
             for note in measure_list:
-                print(type(note))
                 total_beats += note.beats
                 if total_beats > BEATS_P_MEASURE:
                     raise Exception("Error: Number of beats in given list greater than ", BEATS_P_MEASURE, " ", total_beats)
@@ -134,19 +133,87 @@ class Melody:
     The number of measures in a melody are defined by MEASURES_P_MELODY.
     The Melody class's only attribute is the melody_list list of measures.
     """
-    def __init__(self, melody_list = None):
+    def __init__(self, melody_list = None, filename = None):
         """
         Initalizes a Melody object with MEASURES_P_MELODY amount of measures
         """
-        if melody_list is None:
+        if filename is not None and melody_list is not None:
+            raise Exception("Error: Only a melody_list or filename can be given")
+
+        if filename:
+            filename = "./midi_out/" + filename
+            mid_file = MidiFile(filename)
+
+            tempo = 0
+            key_signature = ""
+
+            for message in mid_file:
+                if message.is_meta:
+                    print("meta")
+                    if message.type == 'key_signature':
+                        key_signature = message.key
+                    elif message.type == 'set_tempo':
+                        tempo = message.tempo
+                else:
+                    break
+
+            # Convert MIDI time to micro-seconds 60000 / (BPM * PPQ) PPQ = ticks_per_beat
+            ticks_per_beat = mid_file.ticks_per_beat
+            tempo = int(tempo2bpm(tempo) + 0.5)
+            seconds_per_tick =  (60000 / (tempo * ticks_per_beat)) / 1000000
+
+            note_list = []
+            rest = False
+            sum_beats = 0.0
+            for message in mid_file:
+                if message.is_meta:
+                    pass
+                else:
+                    if message.time != 0:
+                        if rest:
+                            pass
+                            n_p = "Rest"
+                            rest = False
+                        else:
+                            n_p = message.note
+                        vel = message.velocity
+                        time = message.time
+                        ticks = time / seconds_per_tick
+                        beats = ticks / ticks_per_beat
+                        beats = beats / 1000
+                        beats = round(beats, 2)
+                        sum_beats += beats
+                        note_list.append(Note(n_p, beats, vel))
+                    elif message.type == 'note_off':
+                        rest = True
+            
+            measure_list = []
+            melody_list = []
+            sum_beats = 0.0
+            for note in note_list:
+                sum_beats += note.beats
+                measure_list.append(note)
+                if sum_beats == BEATS_P_MEASURE:
+                    melody_list.append(Measure(measure_list))
+                    sum_beats = 0.0
+                    measure_list = []
+            if len(melody_list) > MEASURES_P_MELODY:
+                raise Exception("Error: Melody longer than ", MEASURES_P_MELODY)
+            else:
+                self.melody_list = melody_list
+
+        elif melody_list is None:
             self.melody_list = []
             for i in range(MEASURES_P_MELODY):
                 #print(i)
                 new_measure = Measure()
                 self.melody_list.append(new_measure)
-            return
+
         else:
-            self.melody_list = melody_list
+            if len(melody_list) > MEASURES_P_MELODY:
+                raise Exception("Error: Melody longer than ", MEASURES_P_MELODY)
+            else:
+                self.melody_list = melody_list
 
         return
 
@@ -248,8 +315,13 @@ def play(melody: Melody, outport = None):
         outport.send(message)
     return
 
-# melody = Melody()
-# play(melody)
+melody = Melody()
+#play(melody)
+melody_to_midi(melody, 'program_mid3.mid', 90)
+mid_to_mel = Melody(filename='program_mid3.mid')
+melody_to_midi(mid_to_mel, 'program_mid4.mid', 90)
+#play(mid_to_mel)
+
 
 # outport = mido.open_output(None)
 # melody = Melody()

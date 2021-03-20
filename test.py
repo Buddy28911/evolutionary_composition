@@ -144,13 +144,21 @@ measure_list = []
 melody_list = []
 sum_beats = 0.0
 for note in note_list:
-    if sum_beats < BEATS_P_MEASURE:
-        sum_beats += note.beats
-        measure_list.append(note)
-    else:
+    # if sum_beats < BEATS_P_MEASURE:
+    #     sum_beats += note.beats
+    #     measure_list.append(note)
+    # else:
+    #     melody_list.append(Measure(measure_list))
+    #     sum_beats = 0.0
+    #     measure_list = []
+    sum_beats += note.beats
+    measure_list.append(note)
+    if sum_beats == BEATS_P_MEASURE:
         melody_list.append(Measure(measure_list))
         sum_beats = 0.0
         measure_list = []
+
+    print(note)
 
 print("Playing original:")
 play(melody)
@@ -158,5 +166,12 @@ play(melody)
 melody_read_from_mid = Melody(melody_list)
 print("Play read from file:")
 play(melody_read_from_mid)
+
+
+filename = ""
+if filename:
+    print("True")
+else:
+    print("Filename is none")
 
 print("Done.")
