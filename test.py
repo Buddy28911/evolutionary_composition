@@ -63,7 +63,7 @@ def evaluate_music(input_mel):
 #print(ret_tup)
 import mido
 from mido import Message, MidiFile, MidiTrack, MetaMessage, bpm2tempo, second2tick, tempo2bpm
-from representation import Note, MIDI_TO_NOTE
+from representation import Measure, Note, MIDI_TO_NOTE, MEASURES_P_MELODY, BEATS_P_MEASURE
 
 outport = mido.open_output(None)
 melody = Melody()
@@ -130,7 +130,7 @@ for message in mid_file:
 
 read_str = ""        
 for note in note_list:
-    read_str += str(note)
+    read_str += str(note) + '\n'
     print(note)
 
 print("Original melody")
@@ -139,4 +139,24 @@ print("Read string")
 print(read_str)
 
 print(sum_beats)
+
+measure_list = []
+melody_list = []
+sum_beats = 0.0
+for note in note_list:
+    if sum_beats < BEATS_P_MEASURE:
+        sum_beats += note.beats
+        measure_list.append(note)
+    else:
+        melody_list.append(Measure(measure_list))
+        sum_beats = 0.0
+        measure_list = []
+
+print("Playing original:")
+play(melody)
+
+melody_read_from_mid = Melody(melody_list)
+print("Play read from file:")
+play(melody_read_from_mid)
+
 print("Done.")

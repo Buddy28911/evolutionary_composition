@@ -92,21 +92,32 @@ class Measure:
     has on attribute. The member measure_list is a list of Note classes in the measure.
     The measure class ensures the length of all notes in the measures = BEATS_P_MEASURE
     """
-    def __init__(self):
+    def __init__(self, measure_list: list = None):
         """
         Measures class objects are initialized by randomly generating notes until the measure_list
         has reached a length of BEATS_P_MEASURE
         """
         self.measure_list = []
-        total_beats = 0.0
-        while total_beats != BEATS_P_MEASURE:
-            current_beat = random.choice(BEAT_VALUES)
-            while total_beats + current_beat > BEATS_P_MEASURE:
+        if measure_list is None:
+            total_beats = 0.0
+            while total_beats != BEATS_P_MEASURE:
                 current_beat = random.choice(BEAT_VALUES)
-            new_note = Note(beats=current_beat)
-            self.measure_list.append(new_note)
-            total_beats += current_beat
-        return
+                while total_beats + current_beat > BEATS_P_MEASURE:
+                    current_beat = random.choice(BEAT_VALUES)
+                new_note = Note(beats=current_beat)
+                self.measure_list.append(new_note)
+                total_beats += current_beat
+            return
+        else:
+            total_beats = 0.0
+            for note in measure_list:
+                print(type(note))
+                total_beats += note.beats
+                if total_beats > BEATS_P_MEASURE:
+                    raise Exception("Error: Number of beats in given list greater than ", BEATS_P_MEASURE, " ", total_beats)
+                else:
+                    self.measure_list.append(note)
+            return
         
     def __str__(self):
         """
