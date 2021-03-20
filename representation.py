@@ -10,7 +10,8 @@ MEASURES_P_MELODY = 2
 KEY = "C"
 TEMPO = 90 # BPM
 NOTE_RANGE = ["C4", "C4#", "D4", "D4#", "E4", "F4", "F4#", "G4", "G4#", "A4", "A4#", "B4", "C5", 
-            "C5#", "D5", "D5#", "E5", "F5", "F5#", "G5", "G5#", "A5", "A5#", "B5", 'C6', "Rest", "Rest", "Rest", "Rest"]
+            "C5#", "D5", "D5#", "E5", "F5", "F5#", "G5", "G5#", "A5", "A5#", "B5", 'C6',
+            "Rest", "Rest", "Rest", "Rest"]
 
 NOTE_TO_MIDI = {'C4': 60, 'C4#': 61, 'D4': 62, 'D4#': 63, 'E4': 64, 'F4': 65, 'F4#': 66, 'G4': 67, 
                 'G4#': 68, 'A4': 69, 'A4#': 70, 'B4': 71, 'C5': 72, 'C5#': 73, 'D5': 74, 'D5#': 75, 
@@ -149,7 +150,6 @@ class Melody:
 
             for message in mid_file:
                 if message.is_meta:
-                    print("meta")
                     if message.type == 'key_signature':
                         key_signature = message.key
                     elif message.type == 'set_tempo':
@@ -315,11 +315,24 @@ def play(melody: Melody, outport = None):
         outport.send(message)
     return
 
-melody = Melody()
-#play(melody)
-melody_to_midi(melody, 'program_mid3.mid', 90)
-mid_to_mel = Melody(filename='program_mid3.mid')
-melody_to_midi(mid_to_mel, 'program_mid4.mid', 90)
+def save_best_melodies(population, hall_of_fame):
+    mel_num = 0
+    pop = "population_"
+    for melody in population:
+        filename = pop + str(mel_num) + ".mid"
+        melody_to_midi(melody, filename, TEMPO)
+        mel_num += 1
+    for melody in hall_of_fame:
+        filename = pop + str(mel_num) + ".mid"
+        melody_to_midi(melody, filename, TEMPO)
+        mel_num += 1
+    return
+
+# melody = Melody()
+# #play(melody)
+# melody_to_midi(melody, 'program_mid3.mid', 90)
+# mid_to_mel = Melody(filename='program_mid3.mid')
+# melody_to_midi(mid_to_mel, 'program_mid4.mid', 90)
 #play(mid_to_mel)
 
 

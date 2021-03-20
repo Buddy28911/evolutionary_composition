@@ -12,6 +12,7 @@ from deap import tools
 
 from representation import Melody
 from representation import play
+from representation import save_best_melodies
 
 POP_SIZE = 6    # Dictates the number of melodies in a population
 
@@ -90,7 +91,7 @@ toolbox.register("select", tools.selNSGA2)
 
 def main():
     print("Begining")
-    NGEN = 10   # Num generations
+    NGEN = 2   # Num generations
     MU = 3      # Num of individuals to select for next generation
     LAMBDA = 6  # The number of children to produce at each generation
     CXPB = 0.7  # Probability than an offspring is produced by crossover
@@ -108,7 +109,8 @@ def main():
 
     algorithms.eaMuPlusLambda(population, toolbox, MU, LAMBDA, CXPB, MUTPB, NGEN, stats, hall_of_fame)
 
-    print(NGEN, " generations completed.")
+    print(NGEN, "generations completed.")
+    save_best_melodies(population, hall_of_fame)
     return population, stats, hall_of_fame
 
 
