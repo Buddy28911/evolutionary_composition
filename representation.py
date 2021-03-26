@@ -6,7 +6,7 @@ import mido
 from mido import Message, MidiFile, MidiTrack, MetaMessage, bpm2tempo, tempo2bpm
 
 BEATS_P_MEASURE = 4.0
-MEASURES_P_MELODY = 2
+MEASURES_P_MELODY = 4
 KEY = "C"
 TEMPO = 90 # BPM
 NOTE_RANGE = ["C4", "C4#", "D4", "D4#", "E4", "F4", "F4#", "G4", "G4#", "A4", "A4#", "B4", "C5", 
@@ -260,8 +260,8 @@ class Melody:
         return to_str
             
 def melody_to_midi(melody: Melody, filename: str, tempo: int):
-    mid = MidiFile(type=0)
-    track = MidiTrack()
+    mid = MidiFile(type=1)
+    track = MidiTrack(name="Lead")
     mid.tracks.append(track)
     track.append(MetaMessage('key_signature', key=KEY))
     tempo = bpm2tempo(tempo)
@@ -280,14 +280,34 @@ def melody_to_midi(melody: Melody, filename: str, tempo: int):
             else:
                 # Note on
                 track.append(Message('note_on', note=note.note_pitch, velocity=note.velocity, time=0))
-                track.append(Message('note_off', note=note.note_pitch, velocity=note.velocity, time=beat_val))
+                track.append(Message('note_off', note=note.note_pitch, velocity=0, time=beat_val))
+    
+    # Backing Track
+    backing_track = MidiTrack(name="Backing")
+    mid.tracks.append(backing_track)
+    length_of_background = (int(BEATS_P_MEASURE) * MEASURES_P_MELODY * 2)
+    #print(length_of_background)
+    #C3 48, E3 52, G3 55, C4 60
+    for beat in range(length_of_background *2):
+        ar_pitch = 48
+        if (beat % 4) == 1:
+            ar_pitch = 52
+        elif (beat % 4) == 2:
+            ar_pitch = 55
+        elif (beat % 4) == 3:
+            ar_pitch = 60
+        backing_track.append(Message('note_on', note=ar_pitch, velocity=42, time=0))
+        ar_beat = 0.25 * ticks_per_beat
+        ar_beat = int(ar_beat)
+        backing_track.append(Message('note_off', note=ar_pitch, velocity=0, time=ar_beat))
+    
     filename = "./midi_out/" + filename
     mid.save(filename)
     return
 
 def play(melody: Melody, outport = None):
     
-    mid = MidiFile(type=0)
+    mid = MidiFile(type=1)
     track = MidiTrack()
     mid.tracks.append(track)
     track.append(MetaMessage('key_signature', key=KEY))
@@ -308,8 +328,26 @@ def play(melody: Melody, outport = None):
             else:
                 # Note on
                 track.append(Message('note_on', note=note.note_pitch, velocity=note.velocity, time=0))
-                track.append(Message('note_off', note=note.note_pitch, velocity=note.velocity, time=beat_val))
+                track.append(Message('note_off', note=note.note_pitch, velocity=0, time=beat_val))
     
+    # Backing Track
+    backing_track = MidiTrack()
+    mid.tracks.append(backing_track)
+    length_of_background = (int(BEATS_P_MEASURE) * MEASURES_P_MELODY * 2)
+    #print(length_of_background)
+    #C3 48, E3 52, G3 55, C4 60
+    for beat in range(length_of_background *2):
+        ar_pitch = 48
+        if (beat % 4) == 1:
+            ar_pitch = 52
+        elif (beat % 4) == 2:
+            ar_pitch = 55
+        elif (beat % 4) == 3:
+            ar_pitch = 60
+        backing_track.append(Message('note_on', note=ar_pitch, velocity=42, time=0))
+        ar_beat = 0.25 * ticks_per_beat
+        backing_track.append(Message('note_off', note=ar_pitch, velocity=0, time=ar_beat))
+
     outport = mido.open_output(outport)
     for message in mid.play():
         outport.send(message)
@@ -328,9 +366,9 @@ def save_best_melodies(population, hall_of_fame):
         mel_num += 1
     return
 
-# melody = Melody()
-# #play(melody)
-# melody_to_midi(melody, 'program_mid3.mid', 90)
+melody = Melody()
+play(melody)
+melody_to_midi(melody, 'arp_test1.mid', TEMPO)
 # mid_to_mel = Melody(filename='program_mid3.mid')
 # melody_to_midi(mid_to_mel, 'program_mid4.mid', 90)
 #play(mid_to_mel)

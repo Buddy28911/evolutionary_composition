@@ -101,17 +101,17 @@ def main():
     hall_of_fame = tools.ParetoFront()
 
     # Stats
-    stats = tools.Statistics(lambda ind: ind.fitness.values)
-    stats.register("avg", numpy.mean, axis=0)
-    stats.register("std", numpy.std, axis=0)
-    stats.register("min", numpy.min, axis=0)
-    stats.register("max", numpy.max, axis=0)
+    # stats = tools.Statistics(lambda ind: ind.fitness.values)
+    # stats.register("avg", numpy.mean, axis=0)
+    # stats.register("std", numpy.std, axis=0)
+    # stats.register("min", numpy.min, axis=0)
+    # stats.register("max", numpy.max, axis=0)
 
-    algorithms.eaMuPlusLambda(population, toolbox, MU, LAMBDA, CXPB, MUTPB, NGEN, stats, hall_of_fame)
+    algorithms.eaMuPlusLambda(population, toolbox, MU, LAMBDA, CXPB, MUTPB, NGEN, halloffame=hall_of_fame)
 
     print(NGEN, "generations completed.")
     save_best_melodies(population, hall_of_fame)
-    return population, stats, hall_of_fame
+    return population, hall_of_fame
 
 
 if __name__ == "__main__":
