@@ -260,7 +260,7 @@ class Melody:
             to_str += str(msr)
         return to_str
             
-def melody_to_midi(melody: Melody, filename: str, tempo: int, play: bool, outport: str = None):
+def melody_to_midi(melody: Melody, filename: str, tempo: int, play: bool, outport: str = None, backtrack: bool = True):
     mid = MidiFile(type=1)
     track = MidiTrack(name="Lead")
     mid.tracks.append(track)
@@ -284,23 +284,8 @@ def melody_to_midi(melody: Melody, filename: str, tempo: int, play: bool, outpor
                 track.append(Message('note_off', note=note.note_pitch, velocity=0, time=beat_val))
     
     # Backing Track
-    backing_track = MidiTrack(name="Backing")
-    mid.tracks.append(backing_track)
-    length_of_background = (int(BEATS_P_MEASURE) * MEASURES_P_MELODY * 2)
-    #print(length_of_background)
-    #C3 48, E3 52, G3 55, C4 60
-    for beat in range(length_of_background *2):
-        ar_pitch = 48
-        if (beat % 4) == 1:
-            ar_pitch = 52
-        elif (beat % 4) == 2:
-            ar_pitch = 55
-        elif (beat % 4) == 3:
-            ar_pitch = 60
-        backing_track.append(Message('note_on', note=ar_pitch, velocity=42, time=0))
-        ar_beat = 0.25 * ticks_per_beat
-        ar_beat = int(ar_beat)
-        backing_track.append(Message('note_off', note=ar_pitch, velocity=0, time=ar_beat))
+    if backtrack:
+        add_backing_track(mid)
     
     if play:
         outport = mido.open_output(outport)
@@ -312,6 +297,59 @@ def melody_to_midi(melody: Melody, filename: str, tempo: int, play: bool, outpor
         mid.save(filename)
 
     return
+
+def add_backing_track(mid: MidiFile):
+    ticks_per_beat = mid.ticks_per_beat
+    backing_track = MidiTrack(name="Backing")
+    mid.tracks.append(backing_track)
+    length_of_background = (int(BEATS_P_MEASURE) * MEASURES_P_MELODY * 2)
+    print(length_of_background)
+    #C3 48, E3 52, G3 55, C4 60
+    scale = SCALES[KEY]
+    for beat in range(length_of_background):
+        ar_pitch = NOTE_TO_MIDI[scale[0]]
+        if (beat % 4) == 1:
+            ar_pitch = NOTE_TO_MIDI[scale[2]]
+        elif (beat % 4) == 2:
+            ar_pitch = NOTE_TO_MIDI[scale[4]]
+        elif (beat % 4) == 3:
+            ar_pitch = NOTE_TO_MIDI[scale[7]]
+        backing_track.append(Message('note_on', note=ar_pitch, velocity=42, time=0))
+        ar_beat = 0.25 * ticks_per_beat
+        ar_beat = int(ar_beat)
+        backing_track.append(Message('note_off', note=ar_pitch, velocity=0, time=ar_beat))
+
+    return
+
+def save_best_melodies(population, hall_of_fame):
+    mel_num = 0
+    pop = "population_"
+    for melody in population:
+        filename = pop + str(mel_num) + ".mid"
+        melody_to_midi(melody, filename, TEMPO, False)
+        mel_num += 1
+    for melody in hall_of_fame:
+        filename = pop + str(mel_num) + ".mid"
+        melody_to_midi(melody, filename, TEMPO, False)
+        mel_num += 1
+    return
+
+melody = Melody()
+#play(melody)
+melody_to_midi(melody, None, TEMPO, True)
+melody_to_midi(melody, 'arp_test2.mid', TEMPO, False)
+# mid_to_mel = Melody(filename='program_mid3.mid')
+# melody_to_midi(mid_to_mel, 'program_mid4.mid', 90)
+#play(mid_to_mel)
+
+
+# outport = mido.open_output(None)
+# melody = Melody()
+# print(melody)
+# melody_to_midi(melody, './Project/Code/new_mid.mid', 164)
+# for message in MidiFile('./Project/Code/new_mid.mid').play():
+#     print(message)
+#     outport.send(message)
 
 # def play(melody: Melody, outport = None):
     
@@ -360,36 +398,6 @@ def melody_to_midi(melody: Melody, filename: str, tempo: int, play: bool, outpor
 #     for message in mid.play():
 #         outport.send(message)
 #     return
-
-def save_best_melodies(population, hall_of_fame):
-    mel_num = 0
-    pop = "population_"
-    for melody in population:
-        filename = pop + str(mel_num) + ".mid"
-        melody_to_midi(melody, filename, TEMPO, False)
-        mel_num += 1
-    for melody in hall_of_fame:
-        filename = pop + str(mel_num) + ".mid"
-        melody_to_midi(melody, filename, TEMPO, False)
-        mel_num += 1
-    return
-
-melody = Melody()
-#play(melody)
-melody_to_midi(melody, None, TEMPO, True)
-melody_to_midi(melody, 'arp_test2.mid', TEMPO, False)
-# mid_to_mel = Melody(filename='program_mid3.mid')
-# melody_to_midi(mid_to_mel, 'program_mid4.mid', 90)
-#play(mid_to_mel)
-
-
-# outport = mido.open_output(None)
-# melody = Melody()
-# print(melody)
-# melody_to_midi(melody, './Project/Code/new_mid.mid', 164)
-# for message in MidiFile('./Project/Code/new_mid.mid').play():
-#     print(message)
-#     outport.send(message)
 """
 # test_note_1 = Note("C4", 1.0)
 # print(test_note_1)
