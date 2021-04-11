@@ -4,28 +4,29 @@
 import random
 import mido
 from mido import Message, MidiFile, MidiTrack, MetaMessage, bpm2tempo, tempo2bpm
+from music_data import *
 
-BEATS_P_MEASURE = 4.0
-MEASURES_P_MELODY = 4
-KEY = "C"
-TEMPO = 90 # BPM
-NOTE_RANGE = ["C4", "C4#", "D4", "D4#", "E4", "F4", "F4#", "G4", "G4#", "A4", "A4#", "B4", "C5", 
-            "C5#", "D5", "D5#", "E5", "F5", "F5#", "G5", "G5#", "A5", "A5#", "B5", 'C6',
-            "Rest", "Rest", "Rest", "Rest"]
+# BEATS_P_MEASURE = 4.0
+# MEASURES_P_MELODY = 4
+# KEY = "C"
+# TEMPO = 90 # BPM
+# NOTE_RANGE = ["C4", "C4#", "D4", "D4#", "E4", "F4", "F4#", "G4", "G4#", "A4", "A4#", "B4", "C5", 
+#             "C5#", "D5", "D5#", "E5", "F5", "F5#", "G5", "G5#", "A5", "A5#", "B5", 'C6',
+#             "Rest", "Rest", "Rest", "Rest"]
 
-NOTE_TO_MIDI = {'C4': 60, 'C4#': 61, 'D4': 62, 'D4#': 63, 'E4': 64, 'F4': 65, 'F4#': 66, 'G4': 67, 
-                'G4#': 68, 'A4': 69, 'A4#': 70, 'B4': 71, 'C5': 72, 'C5#': 73, 'D5': 74, 'D5#': 75, 
-                'E5': 76, 'F5': 77, 'F5#': 78, 'G5': 79, 'G5#': 80, 'A5': 81, 'A5#': 82, 'B5': 83, 
-                'C6': 84, 'Rest': 128}
+# NOTE_TO_MIDI = {'C4': 60, 'C4#': 61, 'D4': 62, 'D4#': 63, 'E4': 64, 'F4': 65, 'F4#': 66, 'G4': 67, 
+#                 'G4#': 68, 'A4': 69, 'A4#': 70, 'B4': 71, 'C5': 72, 'C5#': 73, 'D5': 74, 'D5#': 75, 
+#                 'E5': 76, 'F5': 77, 'F5#': 78, 'G5': 79, 'G5#': 80, 'A5': 81, 'A5#': 82, 'B5': 83, 
+#                 'C6': 84, 'Rest': 128}
 
-MIDI_TO_NOTE = {60: 'C4', 61: 'C4#', 62: 'D4', 63: 'D4#', 64: 'E4', 65: 'F4', 66: 'F4#', 67: 'G4', 
-                68: 'G4#', 69: 'A4', 70: 'A4#', 71: 'B4', 72: 'C5', 73: 'C5#', 74: 'D5', 75: 'D5#', 
-                76: 'E5', 77: 'F5', 78: 'F5#', 79: 'G5', 80: 'G5#', 81: 'A5', 82: 'A5#', 83: 'B5', 
-                84: 'C6', 128: 'Rest'}
+# MIDI_TO_NOTE = {60: 'C4', 61: 'C4#', 62: 'D4', 63: 'D4#', 64: 'E4', 65: 'F4', 66: 'F4#', 67: 'G4', 
+#                 68: 'G4#', 69: 'A4', 70: 'A4#', 71: 'B4', 72: 'C5', 73: 'C5#', 74: 'D5', 75: 'D5#', 
+#                 76: 'E5', 77: 'F5', 78: 'F5#', 79: 'G5', 80: 'G5#', 81: 'A5', 82: 'A5#', 83: 'B5', 
+#                 84: 'C6', 128: 'Rest'}
 
-BEAT_VALUES = [2.0, 1.0, 0.5, 0.25] # Note: Whole notes have been removed for now
+# BEAT_VALUES = [2.0, 1.0, 0.5, 0.25] # Note: Whole notes have been removed for now
 
-VELOCITY_RANGE = [53, 64, 80, 96] # MP, MF, F, FF
+# VELOCITY_RANGE = [53, 64, 80, 96] # MP, MF, F, FF
 
 class Note:
     """
@@ -259,7 +260,7 @@ class Melody:
             to_str += str(msr)
         return to_str
             
-def melody_to_midi(melody: Melody, filename: str, tempo: int):
+def melody_to_midi(melody: Melody, filename: str, tempo: int, play: bool, outport: str = None):
     mid = MidiFile(type=1)
     track = MidiTrack(name="Lead")
     mid.tracks.append(track)
@@ -301,74 +302,82 @@ def melody_to_midi(melody: Melody, filename: str, tempo: int):
         ar_beat = int(ar_beat)
         backing_track.append(Message('note_off', note=ar_pitch, velocity=0, time=ar_beat))
     
-    filename = "./midi_out/" + filename
-    mid.save(filename)
+    if play:
+        outport = mido.open_output(outport)
+        for message in mid.play():
+            outport.send(message)
+    
+    if filename:
+        filename = "./midi_out/" + filename
+        mid.save(filename)
+
     return
 
-def play(melody: Melody, outport = None):
+# def play(melody: Melody, outport = None):
     
-    mid = MidiFile(type=1)
-    track = MidiTrack()
-    mid.tracks.append(track)
-    track.append(MetaMessage('key_signature', key=KEY))
-    tempo = bpm2tempo(TEMPO)
-    track.append(MetaMessage('set_tempo', tempo=tempo, time=0))
-    ticks_per_beat = mid.ticks_per_beat
+#     mid = MidiFile(type=1)
+#     track = MidiTrack()
+#     mid.tracks.append(track)
+#     track.append(MetaMessage('key_signature', key=KEY))
+#     tempo = bpm2tempo(TEMPO)
+#     track.append(MetaMessage('set_tempo', tempo=tempo, time=0))
+#     ticks_per_beat = mid.ticks_per_beat
     
-    for measure in melody.melody_list:
-        for note in measure.measure_list:
-            beat_val = note.beats * ticks_per_beat
-            beat_val = int(beat_val)
+#     for measure in melody.melody_list:
+#         for note in measure.measure_list:
+#             beat_val = note.beats * ticks_per_beat
+#             beat_val = int(beat_val)
             
-            if note.note_pitch == 128:
-                # Rest
-                track.append(Message('note_off', note=60, velocity=note.velocity, time=0))
-                track.append(Message('note_off', note=60, velocity=note.velocity, time=beat_val))
+#             if note.note_pitch == 128:
+#                 # Rest
+#                 track.append(Message('note_off', note=60, velocity=note.velocity, time=0))
+#                 track.append(Message('note_off', note=60, velocity=note.velocity, time=beat_val))
 
-            else:
-                # Note on
-                track.append(Message('note_on', note=note.note_pitch, velocity=note.velocity, time=0))
-                track.append(Message('note_off', note=note.note_pitch, velocity=0, time=beat_val))
+#             else:
+#                 # Note on
+#                 track.append(Message('note_on', note=note.note_pitch, velocity=note.velocity, time=0))
+#                 track.append(Message('note_off', note=note.note_pitch, velocity=0, time=beat_val))
     
-    # Backing Track
-    backing_track = MidiTrack()
-    mid.tracks.append(backing_track)
-    length_of_background = (int(BEATS_P_MEASURE) * MEASURES_P_MELODY * 2)
-    #print(length_of_background)
-    #C3 48, E3 52, G3 55, C4 60
-    for beat in range(length_of_background *2):
-        ar_pitch = 48
-        if (beat % 4) == 1:
-            ar_pitch = 52
-        elif (beat % 4) == 2:
-            ar_pitch = 55
-        elif (beat % 4) == 3:
-            ar_pitch = 60
-        backing_track.append(Message('note_on', note=ar_pitch, velocity=42, time=0))
-        ar_beat = 0.25 * ticks_per_beat
-        backing_track.append(Message('note_off', note=ar_pitch, velocity=0, time=ar_beat))
+#     # Backing Track
+#     backing_track = MidiTrack()
+#     mid.tracks.append(backing_track)
+#     length_of_background = (int(BEATS_P_MEASURE) * MEASURES_P_MELODY * 2)
+#     #print(length_of_background)
+#     #C3 48, E3 52, G3 55, C4 60
+#     for beat in range(length_of_background *2):
+#         ar_pitch = 48
+#         if (beat % 4) == 1:
+#             ar_pitch = 52
+#         elif (beat % 4) == 2:
+#             ar_pitch = 55
+#         elif (beat % 4) == 3:
+#             ar_pitch = 60
+#         backing_track.append(Message('note_on', note=ar_pitch, velocity=42, time=0))
+#         ar_beat = 0.25 * ticks_per_beat
+#         backing_track.append(Message('note_off', note=ar_pitch, velocity=0, time=ar_beat))
 
-    outport = mido.open_output(outport)
-    for message in mid.play():
-        outport.send(message)
-    return
+#     outport = mido.open_output(outport)
+#     for message in mid.play():
+#         outport.send(message)
+#     return
 
 def save_best_melodies(population, hall_of_fame):
     mel_num = 0
     pop = "population_"
     for melody in population:
         filename = pop + str(mel_num) + ".mid"
-        melody_to_midi(melody, filename, TEMPO)
+        melody_to_midi(melody, filename, TEMPO, False)
         mel_num += 1
     for melody in hall_of_fame:
         filename = pop + str(mel_num) + ".mid"
-        melody_to_midi(melody, filename, TEMPO)
+        melody_to_midi(melody, filename, TEMPO, False)
         mel_num += 1
     return
 
 melody = Melody()
-play(melody)
-melody_to_midi(melody, 'arp_test1.mid', TEMPO)
+#play(melody)
+melody_to_midi(melody, None, TEMPO, True)
+melody_to_midi(melody, 'arp_test2.mid', TEMPO, False)
 # mid_to_mel = Melody(filename='program_mid3.mid')
 # melody_to_midi(mid_to_mel, 'program_mid4.mid', 90)
 #play(mid_to_mel)
