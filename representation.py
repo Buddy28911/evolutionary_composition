@@ -306,18 +306,30 @@ def add_backing_track(mid: MidiFile):
     #print(length_of_background)
     #C3 48, E3 52, G3 55, C4 60
     scale = SCALES[KEY]
-    for beat in range(length_of_background):
-        ar_pitch = NOTE_TO_MIDI[scale[0]]
-        if (beat % 4) == 1:
-            ar_pitch = NOTE_TO_MIDI[scale[2]]
-        elif (beat % 4) == 2:
-            ar_pitch = NOTE_TO_MIDI[scale[4]]
-        elif (beat % 4) == 3:
-            ar_pitch = NOTE_TO_MIDI[scale[7]]
-        backing_track.append(Message('note_on', note=ar_pitch, velocity=42, time=0))
-        ar_beat = 0.5 * ticks_per_beat
-        ar_beat = int(ar_beat)
-        backing_track.append(Message('note_off', note=ar_pitch, velocity=0, time=ar_beat))
+    if ARP_OR_SCA:
+        for beat in range(length_of_background):
+            ar_pitch = NOTE_TO_MIDI[scale[0]]
+            if (beat % 4) == 1:
+                ar_pitch = NOTE_TO_MIDI[scale[2]]
+            elif (beat % 4) == 2:
+                ar_pitch = NOTE_TO_MIDI[scale[4]]
+            elif (beat % 4) == 3:
+                ar_pitch = NOTE_TO_MIDI[scale[7]]
+            backing_track.append(Message('note_on', note=ar_pitch, velocity=42, time=0))
+            ar_beat = 0.5 * ticks_per_beat
+            ar_beat = int(ar_beat)
+            backing_track.append(Message('note_off', note=ar_pitch, velocity=0, time=ar_beat))
+    else:
+        step = 0
+        for beat in range(length_of_background):
+            ar_pitch = NOTE_TO_MIDI[scale[step]]
+            backing_track.append(Message('note_on', note=ar_pitch, velocity=42, time=0))
+            ar_beat = 0.5 * ticks_per_beat
+            ar_beat = int(ar_beat)
+            backing_track.append(Message('note_off', note=ar_pitch, velocity=0, time=ar_beat))
+            step += 1
+            if step >= 8:
+                step = 0
 
     return
 
