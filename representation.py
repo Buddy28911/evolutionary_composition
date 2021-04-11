@@ -303,7 +303,7 @@ def add_backing_track(mid: MidiFile):
     backing_track = MidiTrack(name="Backing")
     mid.tracks.append(backing_track)
     length_of_background = (int(BEATS_P_MEASURE) * MEASURES_P_MELODY * 2)
-    print(length_of_background)
+    #print(length_of_background)
     #C3 48, E3 52, G3 55, C4 60
     scale = SCALES[KEY]
     for beat in range(length_of_background):
@@ -315,7 +315,7 @@ def add_backing_track(mid: MidiFile):
         elif (beat % 4) == 3:
             ar_pitch = NOTE_TO_MIDI[scale[7]]
         backing_track.append(Message('note_on', note=ar_pitch, velocity=42, time=0))
-        ar_beat = 0.25 * ticks_per_beat
+        ar_beat = 0.5 * ticks_per_beat
         ar_beat = int(ar_beat)
         backing_track.append(Message('note_off', note=ar_pitch, velocity=0, time=ar_beat))
 
