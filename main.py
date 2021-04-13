@@ -1,26 +1,39 @@
 # Main file for Danny Noe's Evolutionary Music Project
 
-import random
+from music_data import *
 
-import numpy
+def set_key_signature():
+    print(KEY)
+    print("The default key signature is ")
+    # yes_no = input("Would you like to change the key signature?")
+    # yes_no = yes_no.lower()
+    key_change = False
 
-from deap import algorithms
-from deap import base
-from deap import creator
-from deap import tools
+    while True:
+        yes_no = input("Would you like to change the key signature?")
+        yes_no = yes_no.lower()
+        if yes_no == "yes" or yes_no == "y" or yes_no == "no" or yes_no == "n":
+            if yes_no == "yes" or yes_no == "y":
+                key_change = True
+            break
+        else:
+            print("Unknown response")
 
-import ctcsound
+    if key_change:
+        print("Available key signatures:")
+        print(SCALES.keys())
+        while True:
+            new_key = input("Desired key signature?")
+            if new_key in SCALES.keys():
+                #KEY = new_key
+                break
+            else:
+                print(new_key, " unsupported.")
 
-from Representation import Melody
+def main():
+    print("Welcome to the evolutionary composition program!")
+    set_key_signature()
+    print(KEY)
 
-from gen_alg import test_me
 
-test_mel = Melody()
-print(test_mel)
-print(test_mel.len())
-
-# Fitness func has one weight, maximizing good melodies
-creator.create("FitnessMax", base.Fitness, weights=(1.0, )) # weights must be tuples, our fitnessmax function maximizes
-creator.create("Melody", Melody, fitness=creator.FitnessMax)
-
-test_me()
+main()
