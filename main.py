@@ -2,7 +2,7 @@
 
 #from music_data import *
 import argparse
-
+from representation import representation
 key_sig = ["Cb","Gb","Db","Ab","Eb","Bb","F","C","G","D","A","E","B","F#","C#"]
 parser = argparse.ArgumentParser()
 #parser.add_argument('-o', '--output', action='store_true', help="shows output")
@@ -41,5 +41,9 @@ def main():
         else:
             print("Backing track disabled.")
         
+    rep = representation(args.key_signature, args.tempo, args.back_track, args.arp_or_scale, None)
+    test_mel = rep.Melody()
+    rep.melody_to_midi(test_mel, "repclass.mid", True)
+
 
 main()
