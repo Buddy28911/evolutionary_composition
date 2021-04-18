@@ -24,6 +24,7 @@ def str2bool(v):
 parser.add_argument('-b', '--back_track', type=str2bool, nargs='?', help="Enables a backing track. Turn on the track with True, False for off.", default=True)
 parser.add_argument('-a', '--arp_or_scale', type=str2bool, nargs='?', help="Sets the backing track to play an ascending arpeggio or scale. True for arp, false for scale", default=True)
 # Todo: Add descending option?
+#parser.add_argument('-m', '--measures_p_melody', type=int, help="Sets the number of measures per each melody")
 
 def main():
     print("Welcome to the evolutionary composition program!")
@@ -40,6 +41,5 @@ def main():
         else:
             print("Backing track disabled.")
         
-    
 
 main()
