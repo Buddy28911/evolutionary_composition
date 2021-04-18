@@ -18,8 +18,7 @@ class representation:
         self.arp_or_scale = arp_or_scale
         self.outport = outport
         return
-
-    # Functions         
+         
     def melody_to_midi(self, melody, filename: str, play: bool):
         mid = MidiFile(type=1)
         track = MidiTrack(name="Lead")
@@ -97,8 +96,35 @@ class representation:
 
         return
 
+    def evaluate_music(self, input_mel):
+        """
+        Evaluation function for music that evaluates a given melody
+        """
+        print("Playing Melody ...")
+        #play(input_mel) # Need function to play each melody for user
+        self.melody_to_midi(input_mel, None, True)
 
-    # Note
+        while True:
+            # Handle the user's input
+            usr_string = input("Did you enjoy that little diddy? Please rate from 0-5 (ints only). To hear it again type replay: ")
+            if usr_string.lower() == "replay":
+                print("Playing Melody ...")
+                #play(input_mel)
+                self.melody_to_midi(input_mel, None, True)
+            else:
+                try:
+                    usr_rating = int(usr_string)
+                except ValueError:
+                    print("Error: Invalid input. Please rate the melody from 0-5 or enter replay to hear it again: ")
+                else:
+                    if usr_rating < 0 or usr_rating > 5:
+                        print("Error: Rating out of bounds. Please rate the melody from 0-5")
+                    else:
+                        break
+
+        return usr_rating,
+
+    # Note Class
     class Note:
         """
         The Note class represents a western music note. It has two attributes.
@@ -159,7 +185,7 @@ class representation:
             """
             return "Pitch: " + MIDI_TO_NOTE[self.note_pitch] + " | Beats: " + str(self.beats) + " | Velocity: " + str(self.velocity)
 
-    # Measure
+    # Measure Class
     class Measure:
         """
         The Measure class represents a measure in musical notation. The measure class
@@ -171,6 +197,7 @@ class representation:
             Measures class objects are initialized by randomly generating notes until the measure_list
             has reached a length of BEATS_P_MEASURE
             """
+            
             self.measure_list = []
             if measure_list is None:
                 total_beats = 0.0
@@ -201,6 +228,7 @@ class representation:
                 to_str += str(m_note) + "\n"
             return to_str
 
+    # Measure Class
     class Melody:
         """
         The Melody class represents a musical melody. Melodies contain a list of measures.
