@@ -16,6 +16,16 @@ from representation import save_best_melodies
 
 POP_SIZE = 6    # Dictates the number of melodies in a population
 
+class algorithm_args:
+    def __init__(self, pop_size, ngen, mu, lambda_, cxpb, mutpb):
+        self.pop_size = pop_size
+        self.ngen = ngen
+        self.mu = mu
+        self.lambda_ = lambda_
+        self.cxpb = cxpb
+        self.mutpb = mutpb
+        return
+
 def cx_music(input_mel1, input_mel2):
     """
     Crossover function for music that performs a crossover operation on two given melodies: input_mel1, input_mel2
@@ -62,6 +72,33 @@ toolbox.register("population", tools.initRepeat, list, creator.Melody)
 toolbox.register("mate", cx_music)
 toolbox.register("mutate", mut_music)
 toolbox.register("select", tools.selNSGA2)
+
+def run_eaMuPlusLambda(rep_obj, alg_args):
+    toolbox.register("evaluate", representation.evaluate_music, rep_obj)
+    print("Begining")
+    
+    population = toolbox.population(n=alg_args.pop_size)
+    hall_of_fame = tools.ParetoFront()
+
+    algorithms.eaMuPlusLambda(population, toolbox, alg_args.mu, alg_args.lambda_, alg_args.cxpb, alg_args.mutpb, alg_args.ngen, halloffame=hall_of_fame)
+
+    print(alg_args.ngen, "generations completed.")
+    save_best_melodies(rep_obj, population, hall_of_fame)
+    return population, hall_of_fame
+
+def run_eaMuCommaLambda(rep_obj, alg_args):
+    toolbox.register("evaluate", representation.evaluate_music, rep_obj)
+    print("Begining")
+    
+    population = toolbox.population(n=alg_args.pop_size)
+    hall_of_fame = tools.ParetoFront()
+
+    algorithms.eaMuCommaLambda(population, toolbox, alg_args.mu, alg_args.lambda_, alg_args.cxpb, alg_args.mutpb, alg_args.ngen, halloffame=hall_of_fame)
+
+    print(alg_args.ngen, "generations completed.")
+    save_best_melodies(rep_obj, population, hall_of_fame)
+    return population, hall_of_fame
+
 
 def run_program(rep_obj):
     toolbox.register("evaluate", representation.evaluate_music, rep_obj)

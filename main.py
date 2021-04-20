@@ -3,7 +3,9 @@
 #from music_data import *
 import argparse
 from representation import representation
-from gen_alg import run_program
+from gen_alg import run_eaMuPlusLambda
+from gen_alg import run_eaMuCommaLambda
+from gen_alg import algorithm_args
 
 key_sig = ["Cb","Gb","Db","Ab","Eb","Bb","F","C","G","D","A","E","B","F#","C#"]
 parser = argparse.ArgumentParser()
@@ -28,6 +30,19 @@ parser.add_argument('-a', '--arp_or_scale', type=str2bool, nargs='?', help="Sets
 # Todo: Add descending option?
 #parser.add_argument('-m', '--measures_p_melody', type=int, help="Sets the number of measures per each melody")
 
+# Algorithms
+gen_alg_group = parser.add_mutually_exclusive_group()
+gen_alg_group.add_argument('--eaMuPlusLambda', action='store_true', help="Use the (𝜇 + 𝜆) evolutionary algorithm.")
+gen_alg_group.add_argument('--eaMuCommaLambda', action='store_true', help="Use the (𝜇 , 𝜆) evolutionary algorithm.")
+# Algorithm options
+gen_al_args = parser.add_argument_group('Genetic Algorithm Arguments', 'eaMuPlusLambda arguments: mu, lambda_, cxpb, mutpb, ngen\neaMuCommaLambda arguments: mu, lambda_, cxpb, mutpb, ngen')
+gen_al_args.add_argument('--popsize', type=int, help="Sets the number of melodies to generate in a generation.", default=6)
+gen_al_args.add_argument('--ngen', type=int, help="ngen sets the number of generations", default=6)
+gen_al_args.add_argument('--mu', type=int, help="mu sets the numer of individuals to select for the next generation", default=3)
+gen_al_args.add_argument('--lambda_', type=int, help="lambda_ sets number of children to produce at each generation.", default=6)
+gen_al_args.add_argument('--cxpb', type=float, help="cxpb sets the probability that an offspring is produced by crossover", metavar="[0,1)", default=0.7)
+gen_al_args.add_argument('--mutpb', type=float, help="mutb sets the probability that an offspring is produced by mutation", metavar="[0,1)", default=0.3)
+
 def main():
     print("Welcome to the evolutionary composition program!")
     args = parser.parse_args()
@@ -44,8 +59,11 @@ def main():
             print("Backing track disabled.")
         
     rep_obj = representation(args.key_signature, args.tempo, args.back_track, args.arp_or_scale, None)
-    
-    run_program(rep_obj)
+    alg_args = algorithm_args(args.popsize, args.ngen, args.mu, args.lambda_, args.cxpb, args.mutpb)
+    if args.eaMuPlusLambda:
+        population, hall_of_fame = run_eaMuPlusLambda(rep_obj, alg_args)
+    elif args.eaMuCommaLambda:
+        population, hall_of_fame = run_eaMuCommaLambda(rep_obj, alg_args)
 
 if __name__ == "__main__":
     main()
