@@ -89,45 +89,6 @@ def run_genetic_algorithm(rep_obj, alg_args):
     save_best_melodies(rep_obj, population, hall_of_fame)
     return population, hall_of_fame
 
-def run_eaMuPlusLambda(toolbox, rep_obj, alg_args):
-    toolbox.register("evaluate", representation.evaluate_music, rep_obj)
-    print("Begining")
-    
-    population = toolbox.population(n=alg_args.pop_size)
-    hall_of_fame = tools.ParetoFront()
-
-    algorithms.eaMuPlusLambda(population, toolbox, alg_args.mu, alg_args.lambda_, alg_args.cxpb, alg_args.mutpb, alg_args.ngen, halloffame=hall_of_fame)
-
-    print(alg_args.ngen, "generations completed.")
-    save_best_melodies(rep_obj, population, hall_of_fame)
-    return population, hall_of_fame
-
-def run_eaMuCommaLambda(toolbox, rep_obj, alg_args):
-    toolbox.register("evaluate", representation.evaluate_music, rep_obj)
-    print("Begining")
-    
-    population = toolbox.population(n=alg_args.pop_size)
-    hall_of_fame = tools.ParetoFront()
-
-    algorithms.eaMuCommaLambda(population, toolbox, alg_args.mu, alg_args.lambda_, alg_args.cxpb, alg_args.mutpb, alg_args.ngen, halloffame=hall_of_fame)
-
-    print(alg_args.ngen, "generations completed.")
-    save_best_melodies(rep_obj, population, hall_of_fame)
-    return population, hall_of_fame
-
-def run_eaSimple(toolbox, rep_obj, alg_args):
-    toolbox.register("evaluate", representation.evaluate_music, rep_obj)
-    print("Begining")
-    
-    population = toolbox.population(n=alg_args.pop_size)
-    hall_of_fame = tools.ParetoFront()
-    algorithms.eaSimple(population, toolbox, alg_args.cxpb, alg_args.mutpb, alg_args.ngen, None, hall_of_fame)
-    #algorithms.eaMuCommaLambda(population, toolbox, alg_args.mu, alg_args.lambda_, alg_args.cxpb, alg_args.mutpb, alg_args.ngen, halloffame=hall_of_fame)
-
-    print(alg_args.ngen, "generations completed.")
-    save_best_melodies(rep_obj, population, hall_of_fame)
-    return population, hall_of_fame
-
 def run_program(rep_obj):
     toolbox.register("evaluate", representation.evaluate_music, rep_obj)
     print("Begining")

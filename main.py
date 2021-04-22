@@ -30,16 +30,15 @@ parser.add_argument('-a', '--arp_or_scale', type=str2bool, nargs='?', help="Sets
 #parser.add_argument('-m', '--measures_p_melody', type=int, help="Sets the number of measures per each melody")
 
 # Algorithms
-# gen_alg_group = parser.add_mutually_exclusive_group()
-# gen_alg_group.add_argument('--eaMuPlusLambda', action='store_true', help="Use the (𝜇 + 𝜆) evolutionary algorithm.")
-# gen_alg_group.add_argument('--eaMuCommaLambda', action='store_true', help="Use the (𝜇 , 𝜆) evolutionary algorithm.")
-gen_alg = parser.add_argument_group('Genetic Algorithms', 'Choose from several different genetic algorithms')
+gen_alg = parser.add_argument_group('Genetic Algorithms', 'Choose from several different genetic algorithms: eaSimple, eaMuPlusLambda, eaMuCommaLambda')
 gen_alg.add_argument('-ga', '--genetic_alg', type=str, 
                     help="Sets the genetic algorithm to use. eaMuPlusLambda: (𝜇 + 𝜆) evolutionary algorithm | eaMuCommaLambda: (𝜇 , 𝜆) evolutionary algorithm |  eaSimple: the simplest evolutionary algorithm", 
                     choices=['eaMuPlusLambda', 'eaMuCommaLambda', 'eaSimple'], default='eaMuPlusLambda')
 
 # Algorithm options
-gen_al_args = parser.add_argument_group('Genetic Algorithm Arguments', 'eaMuPlusLambda arguments: mu, lambda_, cxpb, mutpb, ngen\neaMuCommaLambda arguments: mu, lambda_, cxpb, mutpb, ngen')
+gen_al_args = parser.add_argument_group('Genetic Algorithm Arguments', 
+                    'eaMuPlusLambda arguments: mu, lambda_, cxpb, mutpb, ngen | eaMuCommaLambda arguments: mu, lambda_, cxpb, mutpb, ngen | eaSimple arguments: cxpb, mutpb, ngen')
+
 gen_al_args.add_argument('--popsize', type=int, help="Sets the number of melodies to generate in a generation.", default=6)
 gen_al_args.add_argument('--ngen', type=int, help="ngen sets the number of generations", default=6)
 gen_al_args.add_argument('--mu', type=int, help="mu sets the numer of individuals to select for the next generation", default=3)
