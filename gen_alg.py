@@ -17,7 +17,8 @@ from representation import save_best_melodies
 POP_SIZE = 6    # Dictates the number of melodies in a population
 
 class algorithm_args:
-    def __init__(self, pop_size, ngen, mu, lambda_, cxpb, mutpb):
+    def __init__(self, algorithm, pop_size, ngen, mu, lambda_, cxpb, mutpb):
+        self.algorithm = algorithm
         self.pop_size = pop_size
         self.ngen = ngen
         self.mu = mu
@@ -62,18 +63,33 @@ def mut_music(input_mel):
 
     return input_mel, 
 
-# Fitness func has one weight, maximizing good melodies
-creator.create("FitnessMax", base.Fitness, weights=(1.0, )) # weights must be tuples, our fitnessmax function maximizes
-creator.create("Melody", Melody, fitness=creator.FitnessMax)
+def run_genetic_algorithm(rep_obj, alg_args):
 
-toolbox = base.Toolbox()
-toolbox.register("population", tools.initRepeat, list, creator.Melody)
+    # Fitness func has one weight, maximizing good melodies
+    creator.create("FitnessMax", base.Fitness, weights=(1.0, )) # weights must be tuples, our fitnessmax function maximizes
+    creator.create("Melody", Melody, fitness=creator.FitnessMax)
 
-toolbox.register("mate", cx_music)
-toolbox.register("mutate", mut_music)
-toolbox.register("select", tools.selNSGA2)
+    toolbox = base.Toolbox()
+    toolbox.register("population", tools.initRepeat, list, creator.Melody)
 
-def run_eaMuPlusLambda(rep_obj, alg_args):
+    toolbox.register("mate", cx_music)
+    toolbox.register("mutate", mut_music)
+    toolbox.register("select", tools.selNSGA2)
+    toolbox.register("evaluate", representation.evaluate_music, rep_obj)
+    population = toolbox.population(n=alg_args.pop_size)
+    hall_of_fame = tools.ParetoFront()
+
+    if alg_args.algorithm == "eaMuCommaLambda":
+        algorithms.eaMuCommaLambda(population, toolbox, alg_args.mu, alg_args.lambda_, alg_args.cxpb, alg_args.mutpb, alg_args.ngen, None, hall_of_fame)
+    elif alg_args.algorithm == "eaMuPlusLambda":
+        algorithms.eaMuPlusLambda(population, toolbox, alg_args.mu, alg_args.lambda_, alg_args.cxpb, alg_args.mutpb, alg_args.ngen, None, hall_of_fame)
+    elif alg_args.algorithm == "eaSimple":
+        algorithms.eaSimple(population, toolbox, alg_args.cxpb, alg_args.mutpb, alg_args.ngen, None, hall_of_fame)
+    
+    save_best_melodies(rep_obj, population, hall_of_fame)
+    return population, hall_of_fame
+
+def run_eaMuPlusLambda(toolbox, rep_obj, alg_args):
     toolbox.register("evaluate", representation.evaluate_music, rep_obj)
     print("Begining")
     
@@ -86,7 +102,7 @@ def run_eaMuPlusLambda(rep_obj, alg_args):
     save_best_melodies(rep_obj, population, hall_of_fame)
     return population, hall_of_fame
 
-def run_eaMuCommaLambda(rep_obj, alg_args):
+def run_eaMuCommaLambda(toolbox, rep_obj, alg_args):
     toolbox.register("evaluate", representation.evaluate_music, rep_obj)
     print("Begining")
     
@@ -99,6 +115,18 @@ def run_eaMuCommaLambda(rep_obj, alg_args):
     save_best_melodies(rep_obj, population, hall_of_fame)
     return population, hall_of_fame
 
+def run_eaSimple(toolbox, rep_obj, alg_args):
+    toolbox.register("evaluate", representation.evaluate_music, rep_obj)
+    print("Begining")
+    
+    population = toolbox.population(n=alg_args.pop_size)
+    hall_of_fame = tools.ParetoFront()
+    algorithms.eaSimple(population, toolbox, alg_args.cxpb, alg_args.mutpb, alg_args.ngen, None, hall_of_fame)
+    #algorithms.eaMuCommaLambda(population, toolbox, alg_args.mu, alg_args.lambda_, alg_args.cxpb, alg_args.mutpb, alg_args.ngen, halloffame=hall_of_fame)
+
+    print(alg_args.ngen, "generations completed.")
+    save_best_melodies(rep_obj, population, hall_of_fame)
+    return population, hall_of_fame
 
 def run_program(rep_obj):
     toolbox.register("evaluate", representation.evaluate_music, rep_obj)

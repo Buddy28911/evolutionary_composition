@@ -3,8 +3,7 @@
 #from music_data import *
 import argparse
 from representation import representation
-from gen_alg import run_eaMuPlusLambda
-from gen_alg import run_eaMuCommaLambda
+from gen_alg import run_genetic_algorithm
 from gen_alg import algorithm_args
 
 key_sig = ["Cb","Gb","Db","Ab","Eb","Bb","F","C","G","D","A","E","B","F#","C#"]
@@ -31,9 +30,14 @@ parser.add_argument('-a', '--arp_or_scale', type=str2bool, nargs='?', help="Sets
 #parser.add_argument('-m', '--measures_p_melody', type=int, help="Sets the number of measures per each melody")
 
 # Algorithms
-gen_alg_group = parser.add_mutually_exclusive_group()
-gen_alg_group.add_argument('--eaMuPlusLambda', action='store_true', help="Use the (𝜇 + 𝜆) evolutionary algorithm.")
-gen_alg_group.add_argument('--eaMuCommaLambda', action='store_true', help="Use the (𝜇 , 𝜆) evolutionary algorithm.")
+# gen_alg_group = parser.add_mutually_exclusive_group()
+# gen_alg_group.add_argument('--eaMuPlusLambda', action='store_true', help="Use the (𝜇 + 𝜆) evolutionary algorithm.")
+# gen_alg_group.add_argument('--eaMuCommaLambda', action='store_true', help="Use the (𝜇 , 𝜆) evolutionary algorithm.")
+gen_alg = parser.add_argument_group('Genetic Algorithms', 'Choose from several different genetic algorithms')
+gen_alg.add_argument('-ga', '--genetic_alg', type=str, 
+                    help="Sets the genetic algorithm to use. eaMuPlusLambda: (𝜇 + 𝜆) evolutionary algorithm | eaMuCommaLambda: (𝜇 , 𝜆) evolutionary algorithm |  eaSimple: the simplest evolutionary algorithm", 
+                    choices=['eaMuPlusLambda', 'eaMuCommaLambda', 'eaSimple'], default='eaMuPlusLambda')
+
 # Algorithm options
 gen_al_args = parser.add_argument_group('Genetic Algorithm Arguments', 'eaMuPlusLambda arguments: mu, lambda_, cxpb, mutpb, ngen\neaMuCommaLambda arguments: mu, lambda_, cxpb, mutpb, ngen')
 gen_al_args.add_argument('--popsize', type=int, help="Sets the number of melodies to generate in a generation.", default=6)
@@ -59,11 +63,9 @@ def main():
             print("Backing track disabled.")
         
     rep_obj = representation(args.key_signature, args.tempo, args.back_track, args.arp_or_scale, None)
-    alg_args = algorithm_args(args.popsize, args.ngen, args.mu, args.lambda_, args.cxpb, args.mutpb)
-    if args.eaMuPlusLambda:
-        population, hall_of_fame = run_eaMuPlusLambda(rep_obj, alg_args)
-    elif args.eaMuCommaLambda:
-        population, hall_of_fame = run_eaMuCommaLambda(rep_obj, alg_args)
+    alg_args = algorithm_args(args.genetic_alg, args.popsize, args.ngen, args.mu, args.lambda_, args.cxpb, args.mutpb)
+    population, hall_of_fame = run_genetic_algorithm(rep_obj, alg_args)
+    return population, hall_of_fame
 
 if __name__ == "__main__":
     main()
