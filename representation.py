@@ -267,6 +267,7 @@ class Melody:
             note_list = []
             rest = False
             sum_beats = 0.0
+            melody_track = mid_file.tracks[0]
             for message in mid_file:
                 if message.is_meta:
                     pass

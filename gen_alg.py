@@ -77,6 +77,17 @@ def run_genetic_algorithm(rep_obj, alg_args):
     toolbox.register("select", tools.selNSGA2)
     toolbox.register("evaluate", representation.evaluate_music, rep_obj)
     population = toolbox.population(n=alg_args.pop_size)
+    
+    read_melody = Melody(None, "repclass.mid")
+    new_pop_item = creator.Melody(None, "repclass.mid")
+    print(population[0])
+    print(new_pop_item)
+    population[0] =  new_pop_item
+    print(population[0])
+    #population.append(new_pop_item)
+    #population.append(test_mel)
+    
+
     hall_of_fame = tools.ParetoFront()
 
     if alg_args.algorithm == "eaMuCommaLambda":
