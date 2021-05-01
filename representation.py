@@ -229,7 +229,7 @@ class Measure:
             to_str += str(m_note) + "\n"
         return to_str
 
-# Measure Class
+# Melody Class
 class Melody:
     """
     The Melody class represents a musical melody. Melodies contain a list of measures.
@@ -246,77 +246,8 @@ class Melody:
         if filename:
             filename = "./midi_out/" + filename
             mid_file = MidiFile(filename)
-
-            tempo = 0
-            key_signature = ""
-
-            for message in mid_file:
-                if message.is_meta:
-                    if message.type == 'key_signature':
-                        key_signature = message.key
-                    elif message.type == 'set_tempo':
-                        tempo = message.tempo
-                else:
-                    break
-
-            # Convert MIDI time to micro-seconds 60000 / (BPM * PPQ) PPQ = ticks_per_beat
-            ticks_per_beat = mid_file.ticks_per_beat
-            tempo = int(tempo2bpm(tempo) + 0.5)
-            seconds_per_tick =  (60000 / (tempo * ticks_per_beat)) / 1000000
-
-            note_list = []
-            rest = False
-            sum_beats = 0.0
-            #melody_track = mid_file.tracks[0]
-                            #np   #b   #v
-            new_note_list = ["np", 0.0, 0]
-            new_note_status = False
-            for message in mid_file:
-                if message.is_meta:
-                    pass
-                elif MIDI_TO_NOTE[message.note] not in NOTE_RANGE:
-                    pass
-                else:
-                    if not new_note_status:
-                        new_note_list[0] = message.note
-                        new_note_list[2] = message.velocity
-                        new_note_status = True
-                    if message.time != 0:
-                        if rest:
-                            new_note_list[0] = "Rest"
-                            rest = False
-                        
-                        time = message.time
-                        ticks = time / seconds_per_tick
-                        beats = ticks / ticks_per_beat
-                        beats = beats / 1000
-                        beats = round(beats, 2)
-                        sum_beats += beats
-                        new_note_list[1] = beats
-                        if new_note_list[0] == "Rest":
-                            print("Rest has been set.")
-                        note_list.append(Note(new_note_list[0], new_note_list[1], new_note_list[2]))
-
-                        new_note_status = False
-                        new_note_list = ["np", 0.0, 0]
-
-                    elif message.type == 'note_off':
-                        rest = True
-            
-            measure_list = []
-            melody_list = []
-            sum_beats = 0.0
-            for note in note_list:
-                sum_beats += note.beats
-                measure_list.append(note)
-                if sum_beats == BEATS_P_MEASURE:
-                    melody_list.append(Measure(measure_list))
-                    sum_beats = 0.0
-                    measure_list = []
-            if len(melody_list) > MEASURES_P_MELODY:
-                raise Exception("Error: Melody longer than ", MEASURES_P_MELODY)
-            else:
-                self.melody_list = melody_list
+            self.melody_list = midi_to_melody(mid_file)
+            return
 
         elif melody_list is None:
             self.melody_list = []
@@ -375,7 +306,81 @@ class Melody:
             to_str += str(msr)
         return to_str
 
+
+def midi_to_melody(mid_file: MidiFile):
+    tempo = 0
+    key_signature = ""
+
+    # Get the metadata
+    for message in mid_file:
+        if message.is_meta:
+            if message.type == 'key_signature':
+                key_signature = message.key
+            elif message.type == 'set_tempo':
+                tempo = message.tempo
+        else:
+            break
     
+    # Read all the notes
+    note_list = []
+    rest = False
+    melody_track = mid_file.tracks[0]
+    new_note_list = [0, 0.0, 0] # Note, Beats, Velocity
+    new_note = True
+
+    for message in melody_track:
+        if message.is_meta:
+            pass
+        elif MIDI_TO_NOTE[message.note] not in NOTE_RANGE:
+            pass
+        else:
+            if new_note:
+                new_note_list[0] = message.note
+                new_note_list[2] = message.velocity
+                new_note = False
+            if message.time != 0:
+                if rest:
+                    new_note_list[0] = "Rest"
+                    rest = False
+
+                beat_val = message.time
+                # beat_val = note.beats * ticks_per_beat
+                ticks_per_beat = mid_file.ticks_per_beat
+                beats = beat_val / ticks_per_beat
+                
+                new_note_list[1] = beats
+
+                note_list.append(Note(new_note_list[0], new_note_list[1], new_note_list[2]))
+
+                new_note = True
+            elif message.type == 'note_off':
+                rest = True
+
+    #print(note_list)
+
+    return build_melody(note_list)
+
+def build_melody(note_list: list):
+    measure_list = []
+    measure_beats = 0.0
+    sum_beats = 0.0
+    melody_list = []
+
+    max_beats = BEATS_P_MEASURE * MEASURES_P_MELODY * 1.0
+    for note in note_list:
+        measure_beats += note.beats
+        sum_beats += note.beats
+        measure_list.append(note)
+        if measure_beats == BEATS_P_MEASURE:
+            melody_list.append(Measure(measure_list))
+            measure_beats = 0.0
+            measure_list = []
+
+    if sum_beats > max_beats:
+        raise Exception("Error: Beats in MID exceed ", max_beats)
+    else:
+        return melody_list
+            
 def save_list_of_melodies(rep_obj, the_mel_list, group_name, mel_num):
     for melody in the_mel_list:
         filename = group_name + str(mel_num) + ".mid"
