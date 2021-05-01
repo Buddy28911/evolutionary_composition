@@ -14,6 +14,8 @@ from representation import representation
 from representation import Melody
 from representation import save_best_melodies
 
+from test import *
+from mido import MidiFile
 POP_SIZE = 6    # Dictates the number of melodies in a population
 
 class algorithm_args:
@@ -78,15 +80,23 @@ def run_genetic_algorithm(rep_obj, alg_args):
     toolbox.register("evaluate", representation.evaluate_music, rep_obj)
     population = toolbox.population(n=alg_args.pop_size)
     
-    read_melody = Melody(None, "repclass.mid")
-    new_pop_item = creator.Melody(None, "repclass.mid")
-    print(population[0])
-    print(new_pop_item)
-    population[0] =  new_pop_item
-    print(population[0])
+    #read_melody = Melody(None, "repclass.mid")
+    #new_pop_item = creator.Melody(None, "repclass.mid")
+    #rep_obj.melody_to_midi(new_pop_item, 'readfileout.mid', False)
+    #print(population[0])
+    #print("read melody to str\n", new_pop_item)
+    #population[0] =  new_pop_item
+    #print(population[0])
     #population.append(new_pop_item)
     #population.append(test_mel)
     
+    #midi_melody_test = midi_test_mel_fun()
+    #rep_obj.melody_to_midi(midi_melody_test, "midi_melody_test.mid", True)
+    #read_midi = Melody(None, "midi_melody_test.mid")
+    read_midi = MidiFile("./midi_out/midi_melody_test.mid")
+    read_list = midi_to_melody(read_midi)
+    read_melody = Melody(read_list)
+    rep_obj.melody_to_midi(read_melody, "read_midi_test.mid", True)
 
     hall_of_fame = tools.ParetoFront()
 

@@ -4,7 +4,7 @@
 import random
 import mido
 from mido import Message, MidiFile, MidiTrack, MetaMessage, bpm2tempo, tempo2bpm
-from music_data import BEAT_VALUES, BEATS_P_MEASURE, MEASURES_P_MELODY, NOTE_RANGE, NOTE_TO_MIDI, MIDI_TO_NOTE, VELOCITY_RANGE, SCALES
+from music_data import *
 
 class representation:
     """
@@ -267,26 +267,39 @@ class Melody:
             note_list = []
             rest = False
             sum_beats = 0.0
-            melody_track = mid_file.tracks[0]
+            #melody_track = mid_file.tracks[0]
+                            #np   #b   #v
+            new_note_list = ["np", 0.0, 0]
+            new_note_status = False
             for message in mid_file:
                 if message.is_meta:
                     pass
+                elif MIDI_TO_NOTE[message.note] not in NOTE_RANGE:
+                    pass
                 else:
+                    if not new_note_status:
+                        new_note_list[0] = message.note
+                        new_note_list[2] = message.velocity
+                        new_note_status = True
                     if message.time != 0:
                         if rest:
-                            #pass
-                            n_p = "Rest"
+                            new_note_list[0] = "Rest"
                             rest = False
-                        else:
-                            n_p = message.note
-                        vel = message.velocity
+                        
                         time = message.time
                         ticks = time / seconds_per_tick
                         beats = ticks / ticks_per_beat
                         beats = beats / 1000
                         beats = round(beats, 2)
                         sum_beats += beats
-                        note_list.append(Note(n_p, beats, vel))
+                        new_note_list[1] = beats
+                        if new_note_list[0] == "Rest":
+                            print("Rest has been set.")
+                        note_list.append(Note(new_note_list[0], new_note_list[1], new_note_list[2]))
+
+                        new_note_status = False
+                        new_note_list = ["np", 0.0, 0]
+
                     elif message.type == 'note_off':
                         rest = True
             
