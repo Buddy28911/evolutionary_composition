@@ -29,6 +29,45 @@ def midi_test_mel_fun():
     #print(midi_melody)
     return midi_melody
 
+def midi_test_mel_fun_with_rest():
+    measure_1 = []
+    for i in range(2):
+        if i % 2 != 0:
+            measure_1.append(Note("D5", 2.0, 80))
+        else:
+            measure_1.append(Note("Rest", 2.0, 80))
+        #midi_melody_list.append(Note("D5", 2.0, 80))
+
+    measure_2 = []
+    for i in range(4):
+        if i % 2 != 0:
+            measure_2.append(Note("E5", 1.0, 80))
+        else:
+            measure_2.append(Note("Rest", 1.0, 80))
+
+    measure_3 = []
+    for i in range(8):
+        if i % 2 != 0:
+            measure_3.append(Note("G5", 0.5, 80))
+        else:
+            measure_3.append(Note("Rest", 0.5, 80))
+
+    measure_4 = []
+    for i in range(16):
+        if i % 2 != 0:
+            measure_4.append(Note("A5", 0.25, 80))
+        else:
+            measure_4.append(Note("Rest", 0.25, 80))
+
+    meas_1 = Measure(measure_1)
+    meas_2 = Measure(measure_2)
+    meas_3 = Measure(measure_3)
+    meas_4 = Measure(measure_4)
+    midi_melody_list =  meas_1, meas_2, meas_3, meas_4
+    midi_melody = Melody(melody_list=midi_melody_list)
+    #print(midi_melody)
+    return midi_melody
+
 def midi_to_melody(mid_file: MidiFile):
     tempo = 0
     key_signature = ""
