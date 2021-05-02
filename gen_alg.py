@@ -14,7 +14,7 @@ from representation import representation
 from representation import Melody
 from representation import save_best_melodies
 
-from test import *
+#from test import *
 
 POP_SIZE = 6    # Dictates the number of melodies in a population
 
@@ -65,7 +65,7 @@ def mut_music(input_mel):
 
     return input_mel, 
 
-def load_midi(population):
+def load_midi(population, toolbox, key):
     print("MIDI files saved to ./midi_out/ can be added to the population.")
     print("Note: MIDIs written by this program in previous sessions work best.")
     print("Note: Do not include the folder path.")
@@ -79,7 +79,7 @@ def load_midi(population):
             break
         else:
             try:
-                new_pop_item = creator.Melody(None, filename)
+                new_pop_item = toolbox.melody(filename=filename)
                 population.append(new_pop_item)
             except FileNotFoundError:
                 print("Error: File not found")
@@ -93,15 +93,24 @@ def run_genetic_algorithm(rep_obj, alg_args):
     creator.create("Melody", Melody, fitness=creator.FitnessMax)
 
     toolbox = base.Toolbox()
-    toolbox.register("population", tools.initRepeat, list, creator.Melody)
+    toolbox.register("melody", creator.Melody, key=rep_obj.key_signature)
+    toolbox.register("population", tools.initRepeat, list, toolbox.melody)
 
     toolbox.register("mate", cx_music)
     toolbox.register("mutate", mut_music)
     toolbox.register("select", tools.selNSGA2)
     toolbox.register("evaluate", representation.evaluate_music, rep_obj)
-    population = toolbox.population(n=alg_args.pop_size)
     
-    alg_args.pop_size = load_midi(population)
+    population = toolbox.population(n=alg_args.pop_size)
+
+    # Testing line
+    item = 0
+    for mel in population:
+        filename = "new_creator_" + str(item) + ".mid"
+        rep_obj.melody_to_midi(mel, filename, True)
+        item +=1
+    
+    alg_args.pop_size = load_midi(population, toolbox, rep_obj.key_signature)
 
     hall_of_fame = tools.ParetoFront()
 

@@ -142,6 +142,32 @@ def build_melody(note_list: list):
     else:
         return melody_list
 
+# note = "C4"
+# print(note[1])
+
+# max_beats = BEATS_P_MEASURE * MEASURES_P_MELODY * 1.0
+# print(type(max_beats))
+
+# scale = ["B2", "C3#", "D3#", "E3", "F3#", "G3#", "A3#", "B3"]
+# sca = []
+# for note in scale:
+#     num = int(note[1]) + 2
+#     shifted_note = note[0] + str(num)
+#     if len(note) == 3:
+#         shifted_note += note[2]
+#     sca.append(shifted_note)
+
+# print(scale)
+# print(sca)
+
+# for key in SCALES:
+#     shifted_scale = shift_scale(key)
+#     if len(shifted_scale) != 8:
+#         print(shifted_scale)
+
+
+test = Melody("C")
+print(test)
 # test_mel = MidiFile("./midi_out/midi_melody_test.mid")
 # read_list = midi_to_melody(test_mel)
 # print(read_list)

@@ -236,10 +236,11 @@ class Melody:
     The number of measures in a melody are defined by MEASURES_P_MELODY.
     The Melody class's only attribute is the melody_list list of measures.
     """
-    def __init__(self, melody_list = None, filename = None):
+    def __init__(self, key: str, melody_list = None, filename = None):
         """
         Initalizes a Melody object with MEASURES_P_MELODY amount of measures
         """
+        self.key = key
         if filename is not None and melody_list is not None:
             raise Exception("Error: Only a melody_list or filename can be given")
 
@@ -250,11 +251,11 @@ class Melody:
             return
 
         elif melody_list is None:
-            self.melody_list = []
-            for i in range(MEASURES_P_MELODY):
-                #print(i)
-                new_measure = Measure()
-                self.melody_list.append(new_measure)
+            self.melody_list = new_melody(self.key)
+            # for i in range(MEASURES_P_MELODY):
+            #     #print(i)
+            #     new_measure = Measure()
+            #     self.melody_list.append(new_measure)
 
         else:
             if len(melody_list) > MEASURES_P_MELODY:
@@ -274,7 +275,7 @@ class Melody:
         """
         Returns a new melody object that is a copy the current melody object
         """
-        return Melody(melody_list=self.melody_list)
+        return Melody(self.key, melody_list=self.melody_list)
 
     def cross_mel(self, mel2, change_first_half):
         """
@@ -306,6 +307,158 @@ class Melody:
             to_str += str(msr)
         return to_str
 
+
+def shift_scale(key: str) -> list:
+    """
+    Returns list of notes in a scale shifted up two octaves
+    Input: key: str, the key used to get the scale from the SCALES dict
+    Output: shifted_scale: list, list of 8 notes shifted up two octaves
+    """
+    scale = SCALES[key]
+    shifted_scale = []
+
+    for ori_note in scale:
+        num = int(ori_note[1]) + 2
+        shifted_note = ori_note[0] + str(num)
+        if len(ori_note) == 3:
+            shifted_note += ori_note[2]
+        shifted_scale.append(shifted_note)
+
+    return shifted_scale
+
+def new_melody(key):
+    note_list = []
+    sum_beats = 0.0
+    max_beats = BEATS_P_MEASURE * MEASURES_P_MELODY * 1.0
+    scale = shift_scale(key) # Shift the scale to the treble clef range
+    note_index = 0
+    new_note_list = [0, 0.0, 0] # Note, Beats, Velocity
+    new_measure = True
+    measure_beats = 0.0
+    while sum_beats < max_beats:
+            
+        if note_index == 0:
+            # Initial case
+            new_note_list[0] = scale[random.randint(2, 7)] # Set the starting pitch within the scale
+            new_note_list[1] = random.choice([2.0, 1.0]) # Start melody on longer notes
+            new_note_list[2] = random.choice(VELOCITY_RANGE) #Allow any velocity
+        else:
+            # Normal case
+            prev = note_list[note_index-1]
+            if prev.note_pitch == 128 and len(note_list) > 2:
+                # If the previous pitch was a rest, refer to the pitch at note_index-2
+                prev = note_list[note_index-2]
+                
+            if prev.note_pitch == 128:
+                # If the previous 2 notes are rests, random new note
+                option = 5
+            else:
+                # Else the previous pitch could impact new pitch
+                option = random.randint(0, 6)
+
+            ascend_or_descend = random.randint(0, 1) # Ascend = 1, Descend = 1
+
+            if option == 0:
+                # repeat
+                new_note_list[0] = prev.note_pitch
+            elif option == 1:
+                # step
+                if prev.note_pitch >= 83:
+                    # Override the random choice if we are at the limit
+                    new_note_list[0] = prev.note_pitch - 2
+                elif ascend_or_descend == 0:
+                    # Override the random choice if we are at the limit
+                    new_note_list[0] = prev.note_pitch - 2
+                elif prev.note_pitch <= 61:
+                    new_note_list[0] = prev.note_pitch + 2
+                else:
+                    new_note_list[0] = prev.note_pitch + 2
+
+            elif option == 2:
+                # third
+                if prev.note_pitch >= 82:
+                    # Override the random choice if we are at the limit
+                    new_note_list[0] = prev.note_pitch - 3
+                elif ascend_or_descend == 0:
+                    # Override the random choice if we are at the limit
+                    new_note_list[0] = prev.note_pitch - 3
+                elif prev.note_pitch <= 62:
+                    new_note_list[0] = prev.note_pitch + 3
+                else:
+                    new_note_list[0] = prev.note_pitch + 3
+
+            elif option == 3:
+                # skip
+                skip = random.randint(1, 4)
+                upper_bound = 84 - skip
+                lower_bound = 60 + skip
+                if prev.note_pitch > upper_bound:
+                    # Override the random choice if we are at the limit
+                    new_note_list[0] = prev.note_pitch - skip
+                elif ascend_or_descend == 0:
+                    # Override the random choice if we are at the limit
+                    new_note_list[0] = prev.note_pitch - skip
+                elif prev.note_pitch < lower_bound:
+                    new_note_list[0] = prev.note_pitch + skip
+                else:
+                    new_note_list[0] = prev.note_pitch + skip
+
+            elif option == 4:
+                # Octave
+                octave = 12
+                upper_bound = 84 - octave
+                lower_bound = 60 + octave
+                if prev.note_pitch > upper_bound:
+                    # Override the random choice if we are at the limit
+                    new_note_list[0] = prev.note_pitch - octave
+                elif ascend_or_descend == 0:
+                    # Override the random choice if we are at the limit
+                    new_note_list[0] = prev.note_pitch - octave
+                elif prev.note_pitch < lower_bound:
+                    new_note_list[0] = prev.note_pitch + octave
+                else:
+                    new_note_list[0] = prev.note_pitch + octave
+
+            elif option == 5:
+                # jump
+                jump = random.randint(4, 14)
+                upper_bound = 84 - jump
+                lower_bound = 60 + jump
+                if prev.note_pitch > upper_bound:
+                    # Override the random choice if we are at the limit
+                    new_note_list[0] = prev.note_pitch - jump
+                elif ascend_or_descend == 0:
+                    # Override the random choice if we are at the limit
+                    new_note_list[0] = prev.note_pitch - jump
+                elif prev.note_pitch < lower_bound:
+                    new_note_list[0] = prev.note_pitch + jump
+                else:
+                    new_note_list[0] = prev.note_pitch + jump
+
+            elif option == 6:
+                # random
+                new_note_list[0] = random.choice(NOTE_RANGE)
+
+            elif option == 7:
+                # rest
+                new_note_list[0] = 128
+            
+            current_beat = random.choice(BEAT_VALUES)
+            while measure_beats + current_beat > BEATS_P_MEASURE:
+                    current_beat = random.choice(BEAT_VALUES)
+            new_note_list[1] = current_beat
+
+            new_note_list[2] = random.choice(VELOCITY_RANGE)
+        
+        note_list.append(Note(new_note_list[0], new_note_list[1], new_note_list[2]))
+        sum_beats += new_note_list[1]
+        measure_beats += new_note_list[1]
+        if measure_beats == BEATS_P_MEASURE:
+            measure_beats = 0.0
+        note_index += 1
+        new_note_list = [0, 0.0, 0] # Note, Beats, Velocity
+        
+    return build_melody(note_list)
 
 def midi_to_melody(mid_file: MidiFile):
     tempo = 0
