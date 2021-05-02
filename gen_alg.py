@@ -65,6 +65,27 @@ def mut_music(input_mel):
 
     return input_mel, 
 
+def load_midi(population):
+    print("MIDI files saved to ./midi_out/ can be added to the population.")
+    print("Note: MIDIs written by this program in previous sessions work best.")
+    print("Note: Do not include the folder path.")
+    print("Note: The pop_size arg will be updated to include read files.")
+    more_input = True
+    while more_input:
+        # Handle the user's input
+        filename = input("Enter a MIDI file? (No to stop) ")
+        if filename.lower() == "no" or filename.lower() == "n":
+            more_input = False
+            break
+        else:
+            try:
+                new_pop_item = creator.Melody(None, filename)
+                population.append(new_pop_item)
+            except FileNotFoundError:
+                print("Error: File not found")
+            
+    return len(population)
+
 def run_genetic_algorithm(rep_obj, alg_args):
 
     # Fitness func has one weight, maximizing good melodies
@@ -80,20 +101,7 @@ def run_genetic_algorithm(rep_obj, alg_args):
     toolbox.register("evaluate", representation.evaluate_music, rep_obj)
     population = toolbox.population(n=alg_args.pop_size)
     
-    # new_pop_item = creator.Melody(None, "read_midi_test.mid")
-    # population[0] = new_pop_item
-    
-    #test_mel2 = midi_test_mel_fun_with_rest()
-    #rep_obj.melody_to_midi(test_mel2, "test_mel2.mid", True)
-    new_pop_item = creator.Melody(None, "test_mel2.mid")
-    population[1] = new_pop_item
-
-    #rand_mel_test = Melody()
-    #rep_obj.melody_to_midi(rand_mel_test, "rand_mel_test.mid", True)
-    # read_random = Melody(None, "rand_mel_test.mid")
-    # rep_obj.melody_to_midi(read_random, "read_random.mid", True)
-    
-    # To do: Write function to read midi files from midi_out folder then add them to the population
+    alg_args.pop_size = load_midi(population)
 
     hall_of_fame = tools.ParetoFront()
 
