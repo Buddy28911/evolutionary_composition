@@ -101,15 +101,14 @@ class representation:
         Evaluation function for music that evaluates a given melody
         """
         print("Playing Melody ...")
-        #play(input_mel) # Need function to play each melody for user
         self.melody_to_midi(input_mel, None, True)
 
-        while True:
+        evaluating = True
+        while evaluating:
             # Handle the user's input
             usr_string = input("Did you enjoy that little diddy? Please rate from 0-5 (ints only). To hear it again type replay: ")
             if usr_string.lower() == "replay":
                 print("Playing Melody ...")
-                #play(input_mel)
                 self.melody_to_midi(input_mel, None, True)
             else:
                 try:
@@ -120,6 +119,7 @@ class representation:
                     if usr_rating < 0 or usr_rating > 5:
                         print("Error: Rating out of bounds. Please rate the melody from 0-5")
                     else:
+                        evaluating = False
                         break
 
         return usr_rating,
