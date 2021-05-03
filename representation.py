@@ -350,7 +350,7 @@ def get_new_pitch(prev_pitch: int, interval: int, ascend_or_descend: int) -> int
     return new_pitch
 
 
-def get_new_note_pitch(prev_pitch: int):
+def get_new_note_pitch(prev_pitch: int, ascend_or_descend: int):
 
     # Will be called from next_note
     new_pitch = 0
@@ -360,8 +360,6 @@ def get_new_note_pitch(prev_pitch: int):
     else:
         # Else the previous pitch could impact new pitch
         option = random.randint(0, 7)
-
-    ascend_or_descend = random.randint(0, 1) # Ascend = 1, Descend = 1
 
     if option == 0:
         # repeat
@@ -398,7 +396,7 @@ def get_new_note_pitch(prev_pitch: int):
 
     return
 
-def get_new_note_beat(measure_beats: float):
+def get_new_note_beat(measure_beats: float) -> float:
 
     # Will be called from next_note
     current_beat = random.choice(BEAT_VALUES)
@@ -406,19 +404,45 @@ def get_new_note_beat(measure_beats: float):
             current_beat = random.choice(BEAT_VALUES)
     return current_beat
 
-def get_new_note_velocity(prev_velocity: int):
+def get_new_note_velocity(prev_velocity: int, ascend_or_descend: int) -> int:
     # Will be called from next_note
-    return random.choice(VELOCITY_RANGE)
+    
+    option = random.randint(0, 4)
+    new_velocity = 0
+    if option < 2:
+        # sustain dynamic
+        new_velocity = prev_velocity
+    else:
+        # Dynamic change
+        if prev_velocity == 96:
+            # Can't get louder
+            new_velocity = 80
+        elif prev_velocity == 53:
+            # Can't get quieter
+            new_velocity = 64
+        elif ascend_or_descend == 0:
+            if prev_velocity == 64:
+                new_velocity = 53
+            else:
+                new_velocity = 64
+        else:
+            if prev_velocity == 64:
+                new_velocity = 80
+            else:
+                new_velocity = 96
+
+    return new_velocity
 
 def next_note(prev: Note, measure_beats: int):
     # Will be called from new_melody
     new_note_list = [0, 0.0, 0] # Note, Beats, Velocity
 
-    new_note_list[0] = get_new_note_pitch(prev.note_pitch)
+    ascend_or_descend = random.randint(0, 1) # Ascend = 1, Descend = 1
+    new_note_list[0] = get_new_note_pitch(prev.note_pitch, ascend_or_descend)
     
     new_note_list[1] = get_new_note_beat(measure_beats)
 
-    new_note_list[2] = get_new_note_velocity(prev.velocity)
+    new_note_list[2] = get_new_note_velocity(prev.velocity, ascend_or_descend)
 
     return new_note_list
 
@@ -437,7 +461,7 @@ def new_melody(key):
             # Initial case
             new_note_list[0] = scale[random.randint(2, 7)] # Set the starting pitch within the scale
             new_note_list[1] = random.choice([2.0, 1.0]) # Start melody on longer notes
-            new_note_list[2] = random.choice(VELOCITY_RANGE) #Allow any velocity
+            new_note_list[2] = random.choice([53, 96]) # Start quiet or loud
         else:
             # Normal case
             prev = note_list[note_index-1]
