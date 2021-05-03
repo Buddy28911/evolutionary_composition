@@ -149,7 +149,7 @@ class Note:
                 else:
                     note_pitch = NOTE_TO_MIDI[note_pitch]
             elif type(note_pitch) is int:
-                if note_pitch not in MIDI_TO_NOTE:
+                if MIDI_TO_NOTE[note_pitch]  not in NOTE_RANGE:
                     raise Exception("Error:", note_pitch, " out of note range and not a rest")
             else:
                 raise Exception("Error:", note_pitch, " must be a string or int")
@@ -326,26 +326,100 @@ def shift_scale(key: str) -> list:
 
     return shifted_scale
 
-def get_new_pitch(prev_pitch: int, interval: int, ascend_or_descend: int):
+def get_new_pitch(prev_pitch: int, interval: int, ascend_or_descend: int) -> int:
     """
+    Returns a new_pitch based off the prev_pitch
+    Input: prev_pitch: int, the previous pitch | interval: int, the interval to shift the new_pitch | ascend_or_descend: int, dictates if the pitch is shifted up or down
+    Output: new_pitch: int, shifted pitch
     """
     upper_bound = 84 - interval
     lower_bound = 60 + interval
-    new_val = 0
+    new_pitch = 0
 
     if prev_pitch > upper_bound:
-        # Override the random choice if we are at the limit
-        new_val = prev_pitch - interval
+        # Override the ascend_or_descend val if we are at the bound
+        new_pitch = prev_pitch - interval
     elif prev_pitch < lower_bound:
-        # Override the random choice if we are at the limit
-        new_val = prev_pitch + interval
+        # Override the ascend_or_descend val if we are at the bound
+        new_pitch = prev_pitch + interval
     elif ascend_or_descend == 0:
-        new_val = prev_pitch - interval
+        new_pitch = prev_pitch - interval
     else:
-        new_val = prev_pitch - interval
+        new_pitch = prev_pitch - interval
 
-    return new_val
+    return new_pitch
 
+
+def get_new_note_pitch(prev_pitch: int):
+
+    # Will be called from next_note
+    new_pitch = 0
+    if prev_pitch == 128:
+        # If the previous 2 notes are rests, random new note
+        option = 6
+    else:
+        # Else the previous pitch could impact new pitch
+        option = random.randint(0, 7)
+
+    ascend_or_descend = random.randint(0, 1) # Ascend = 1, Descend = 1
+
+    if option == 0:
+        # repeat
+        new_pitch = prev_pitch
+    elif option == 1:
+        # step
+        new_pitch = get_new_pitch(prev_pitch, 2, ascend_or_descend)
+
+    elif option == 2:
+        # third
+        new_pitch = get_new_pitch(prev_pitch, 3, ascend_or_descend)
+
+    elif option == 3:
+        # skip
+        skip = random.randint(1, 4)
+        new_pitch = get_new_pitch(prev_pitch, skip, ascend_or_descend)
+
+    elif option == 4:
+        # Octave
+        new_pitch = get_new_pitch(prev_pitch, 12, ascend_or_descend)
+
+    elif option == 5:
+        # jump
+        jump = random.randint(4, 14)
+        new_pitch = get_new_pitch(prev_pitch, jump, ascend_or_descend)
+
+    elif option == 6:
+        # random
+        new_pitch = random.choice(NOTE_RANGE)
+
+    elif option == 7:
+        # rest
+        new_pitch = 128
+
+    return
+
+def get_new_note_beat(measure_beats: float):
+
+    # Will be called from next_note
+    current_beat = random.choice(BEAT_VALUES)
+    while measure_beats + current_beat > BEATS_P_MEASURE:
+            current_beat = random.choice(BEAT_VALUES)
+    return current_beat
+
+def get_new_note_velocity():
+    # Will be called from next_note
+    return random.choice(VELOCITY_RANGE)
+
+def next_note(prev: Note, measure_beats: int):
+    # Will be called from new_melody
+    new_note_list = [0, 0.0, 0] # Note, Beats, Velocity
+
+    new_note_list[0] = get_new_note_pitch(prev.note_pitch)
+    
+    new_note_list[1] = get_new_note_beat(measure_beats)
+
+    new_note_list[2] = get_new_note_velocity()
+    return new_note_list
 
 def new_melody(key):
     note_list = []
@@ -370,54 +444,8 @@ def new_melody(key):
                 # If the previous pitch was a rest, refer to the pitch at note_index-2
                 prev = note_list[note_index-2]
                 
-            if prev.note_pitch == 128:
-                # If the previous 2 notes are rests, random new note
-                option = 6
-            else:
-                # Else the previous pitch could impact new pitch
-                option = random.randint(0, 7)
-
-            ascend_or_descend = random.randint(0, 1) # Ascend = 1, Descend = 1
-
-            if option == 0:
-                # repeat
-                new_note_list[0] = prev.note_pitch
-            elif option == 1:
-                # step
-                new_note_list[0] = get_new_pitch(prev.note_pitch, 2, ascend_or_descend)
-
-            elif option == 2:
-                # third
-                new_note_list[0] = get_new_pitch(prev.note_pitch, 3, ascend_or_descend)
-
-            elif option == 3:
-                # skip
-                skip = random.randint(1, 4)
-                new_note_list[0] = get_new_pitch(prev.note_pitch, skip, ascend_or_descend)
-
-            elif option == 4:
-                # Octave
-                new_note_list[0] = get_new_pitch(prev.note_pitch, 12, ascend_or_descend)
-
-            elif option == 5:
-                # jump
-                jump = random.randint(4, 14)
-                new_note_list[0] = get_new_pitch(prev.note_pitch, jump, ascend_or_descend)
-
-            elif option == 6:
-                # random
-                new_note_list[0] = random.choice(NOTE_RANGE)
-
-            elif option == 7:
-                # rest
-                new_note_list[0] = 128
-            
-            current_beat = random.choice(BEAT_VALUES)
-            while measure_beats + current_beat > BEATS_P_MEASURE:
-                    current_beat = random.choice(BEAT_VALUES)
-            new_note_list[1] = current_beat
-
-            new_note_list[2] = random.choice(VELOCITY_RANGE)
+            # Where new_note returns
+            new_note_list = next_note(prev, measure_beats)
         
         note_list.append(Note(new_note_list[0], new_note_list[1], new_note_list[2]))
         sum_beats += new_note_list[1]
