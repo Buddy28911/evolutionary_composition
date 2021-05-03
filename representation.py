@@ -406,7 +406,7 @@ def get_new_note_beat(measure_beats: float):
             current_beat = random.choice(BEAT_VALUES)
     return current_beat
 
-def get_new_note_velocity():
+def get_new_note_velocity(prev_velocity: int):
     # Will be called from next_note
     return random.choice(VELOCITY_RANGE)
 
@@ -418,7 +418,8 @@ def next_note(prev: Note, measure_beats: int):
     
     new_note_list[1] = get_new_note_beat(measure_beats)
 
-    new_note_list[2] = get_new_note_velocity()
+    new_note_list[2] = get_new_note_velocity(prev.velocity)
+
     return new_note_list
 
 def new_melody(key):
