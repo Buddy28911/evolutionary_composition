@@ -326,6 +326,27 @@ def shift_scale(key: str) -> list:
 
     return shifted_scale
 
+def get_new_pitch(prev_pitch: int, interval: int, ascend_or_descend: int):
+    """
+    """
+    upper_bound = 84 - interval
+    lower_bound = 60 + interval
+    new_val = 0
+
+    if prev_pitch > upper_bound:
+        # Override the random choice if we are at the limit
+        new_val = prev_pitch - interval
+    elif prev_pitch < lower_bound:
+        # Override the random choice if we are at the limit
+        new_val = prev_pitch + interval
+    elif ascend_or_descend == 0:
+        new_val = prev_pitch - interval
+    else:
+        new_val = prev_pitch - interval
+
+    return new_val
+
+
 def new_melody(key):
     note_list = []
     sum_beats = 0.0
@@ -351,10 +372,10 @@ def new_melody(key):
                 
             if prev.note_pitch == 128:
                 # If the previous 2 notes are rests, random new note
-                option = 5
+                option = 6
             else:
                 # Else the previous pitch could impact new pitch
-                option = random.randint(0, 6)
+                option = random.randint(0, 7)
 
             ascend_or_descend = random.randint(0, 1) # Ascend = 1, Descend = 1
 
@@ -363,77 +384,25 @@ def new_melody(key):
                 new_note_list[0] = prev.note_pitch
             elif option == 1:
                 # step
-                if prev.note_pitch >= 83:
-                    # Override the random choice if we are at the limit
-                    new_note_list[0] = prev.note_pitch - 2
-                elif ascend_or_descend == 0:
-                    # Override the random choice if we are at the limit
-                    new_note_list[0] = prev.note_pitch - 2
-                elif prev.note_pitch <= 61:
-                    new_note_list[0] = prev.note_pitch + 2
-                else:
-                    new_note_list[0] = prev.note_pitch + 2
+                new_note_list[0] = get_new_pitch(prev.note_pitch, 2, ascend_or_descend)
 
             elif option == 2:
                 # third
-                if prev.note_pitch >= 82:
-                    # Override the random choice if we are at the limit
-                    new_note_list[0] = prev.note_pitch - 3
-                elif ascend_or_descend == 0:
-                    # Override the random choice if we are at the limit
-                    new_note_list[0] = prev.note_pitch - 3
-                elif prev.note_pitch <= 62:
-                    new_note_list[0] = prev.note_pitch + 3
-                else:
-                    new_note_list[0] = prev.note_pitch + 3
+                new_note_list[0] = get_new_pitch(prev.note_pitch, 3, ascend_or_descend)
 
             elif option == 3:
                 # skip
                 skip = random.randint(1, 4)
-                upper_bound = 84 - skip
-                lower_bound = 60 + skip
-                if prev.note_pitch > upper_bound:
-                    # Override the random choice if we are at the limit
-                    new_note_list[0] = prev.note_pitch - skip
-                elif ascend_or_descend == 0:
-                    # Override the random choice if we are at the limit
-                    new_note_list[0] = prev.note_pitch - skip
-                elif prev.note_pitch < lower_bound:
-                    new_note_list[0] = prev.note_pitch + skip
-                else:
-                    new_note_list[0] = prev.note_pitch + skip
+                new_note_list[0] = get_new_pitch(prev.note_pitch, skip, ascend_or_descend)
 
             elif option == 4:
                 # Octave
-                octave = 12
-                upper_bound = 84 - octave
-                lower_bound = 60 + octave
-                if prev.note_pitch > upper_bound:
-                    # Override the random choice if we are at the limit
-                    new_note_list[0] = prev.note_pitch - octave
-                elif ascend_or_descend == 0:
-                    # Override the random choice if we are at the limit
-                    new_note_list[0] = prev.note_pitch - octave
-                elif prev.note_pitch < lower_bound:
-                    new_note_list[0] = prev.note_pitch + octave
-                else:
-                    new_note_list[0] = prev.note_pitch + octave
+                new_note_list[0] = get_new_pitch(prev.note_pitch, 12, ascend_or_descend)
 
             elif option == 5:
                 # jump
                 jump = random.randint(4, 14)
-                upper_bound = 84 - jump
-                lower_bound = 60 + jump
-                if prev.note_pitch > upper_bound:
-                    # Override the random choice if we are at the limit
-                    new_note_list[0] = prev.note_pitch - jump
-                elif ascend_or_descend == 0:
-                    # Override the random choice if we are at the limit
-                    new_note_list[0] = prev.note_pitch - jump
-                elif prev.note_pitch < lower_bound:
-                    new_note_list[0] = prev.note_pitch + jump
-                else:
-                    new_note_list[0] = prev.note_pitch + jump
+                new_note_list[0] = get_new_pitch(prev.note_pitch, jump, ascend_or_descend)
 
             elif option == 6:
                 # random
