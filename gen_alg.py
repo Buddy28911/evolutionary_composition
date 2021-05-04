@@ -11,7 +11,11 @@ from representation import representation, save_best_melodies, Melody
 
 
 class algorithm_args:
-    def __init__(self, algorithm, pop_size, ngen, mu, lambda_, cxpb, mutpb):
+    """
+    The algorithm_args object contains all of the algorithm arguments recieved on the command-line.
+    algorithm_args simplifies number of arguments that need to be sent to run_program()
+    """
+    def __init__(self: algorithm_args, algorithm: str, pop_size: int, ngen: int, mu: int, lambda_: int, cxpb: float, mutpb: float):
         self.algorithm = algorithm
         self.pop_size = pop_size
         self.ngen = ngen
@@ -31,13 +35,11 @@ def cx_music(input_mel1, input_mel2):
     # Make temp copy
     mel_copy = input_mel1.copy()
     # Child 1
-    #print("Child 1 Before ", str(input_mel1))
     input_mel1.cross_mel(input_mel2, True)
-    #print("After ", str(input_mel1))
+
     # Child 2
-    #print("Child 2 Before ", str(input_mel2))
     input_mel2.cross_mel(mel_copy, False)
-    #print("After ", str(input_mel2))
+    
     return input_mel1, input_mel2
 
 def mut_music(input_mel):
@@ -81,7 +83,7 @@ def load_midi(population, toolbox, key):
 def run_genetic_algorithm(rep_obj, alg_args):
 
     # Fitness func has one weight, maximizing good melodies
-    creator.create("FitnessMax", base.Fitness, weights=(1.0, )) # weights must be tuples, our fitnessmax function maximizes
+    creator.create("FitnessMax", base.Fitness, weights=(1.0, )) # weights must be tuples, but we only have parameter to maximize
     creator.create("Melody", Melody, fitness=creator.FitnessMax)
 
     toolbox = base.Toolbox()
@@ -108,4 +110,3 @@ def run_genetic_algorithm(rep_obj, alg_args):
     
     save_best_melodies(rep_obj, population, hall_of_fame)
     return population, hall_of_fame
-

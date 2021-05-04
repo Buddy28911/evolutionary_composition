@@ -1,10 +1,15 @@
+# music_date.py
+# Danny Noe
+# music_data.py houses constant data used by representation.py. This file has no executable code
 
-# Representation Data
+##############################
+# Representation specific data
+##############################
 BEATS_P_MEASURE = 4.0
 MEASURES_P_MELODY = 4
 #KEY = "Bb"
 #TEMPO = 90 # BPM
-BEAT_VALUES = [2.0, 1.0, 0.5, 0.25] # Note: Whole notes have been removed for now
+BEAT_VALUES = [2.0, 1.0, 0.5, 0.25] # Note: Whole and 32nd notes could be supported, but are not due to the melodies being short
 VELOCITY_RANGE = [53, 64, 80, 96] # MP, MF, F, FF
 #ARP_OR_SCA = False # True = Arp, False = Scale
 
@@ -12,7 +17,9 @@ NOTE_RANGE = ["C4", "C4#", "D4", "D4#", "E4", "F4", "F4#", "G4", "G4#", "A4", "A
             "C5#", "D5", "D5#", "E5", "F5", "F5#", "G5", "G5#", "A5", "A5#", "B5", 'C6',
             "Rest", "Rest", "Rest", "Rest"] # Treble clef range
 
-# Midi Data
+##############################
+# MIDI specific data
+##############################
 MIDI_RANGE = ["C0", "C0#", "D0", "D0#", "E0", "F0", "F0#", "G0", "G0#", "A0", "A0#", "B0",
             "C1", "C1#", "D1", "D1#", "E1", "F1", "F1#", "G1", "G1#", "A1", "A1#", "B1",
             "C2", "C2#", "D2", "D2#", "E2", "F2", "F2#", "G2", "G2#", "A2", "A2#", "B2",
@@ -46,8 +53,10 @@ MIDI_TO_NOTE = {12: 'C0', 13: 'C0#', 14: 'D0', 15: 'D0#', 16: 'E0', 17: 'F0', 18
                 108: 'C8', 109: 'C8#', 110: 'D8', 111: 'D8#', 112: 'E8', 113: 'F8', 114: 'F8#', 115: 'G8', 116: 'G8#', 117: 'A8', 118: 'A8#', 119: 'B8', 
                 120: 'C9', 121: 'C9#', 122: 'D9', 123: 'D9#', 124: 'E9', 125: 'F9', 126: 'F9#', 127: 'G9', 128: 'Rest'}
 
+##############################
 # Scales
-# Currently all major scales supported by MIDI are implemented. 
+##############################
+# Currently all major scales supported by MIDI are implemented. Minor scales are not currently implemented
 SCALES = {"Cb": ["B2", "C3#", "D3#", "E3", "F3#", "G3#", "A3#", "B3"],
         "Gb": ["F2#", "G2#", "A2#", "B2", "C3#", "D3#", "F3", "F3#"],
         "Db": ["C2#", "D2#", "F2", "F2#", "G2#", "A2#", "C3", "C3#"],
