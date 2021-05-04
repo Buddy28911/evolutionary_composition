@@ -15,7 +15,15 @@ class algorithm_args:
     The algorithm_args object contains all of the algorithm arguments recieved on the command-line.
     algorithm_args simplifies number of arguments that need to be sent to run_program()
     """
-    def __init__(self: algorithm_args, algorithm: str, pop_size: int, ngen: int, mu: int, lambda_: int, cxpb: float, mutpb: float):
+    def __init__(self, algorithm: str, pop_size: int, ngen: int, mu: int, lambda_: int, cxpb: float, mutpb: float):
+        """
+        Initializes the algorithm_args object with arguments given on the command-line
+        Input: algorithm: str, the name of the genetic algorithm | pop_size: int, the size of the initial population
+        ngen: int, the number of generations the ga will run for | mu: int, the number of individuals to select for the next generation
+        lambda_: int, sets number of children to produce at each generation | cxpb: float, the probability that an offspring is produced by crossover
+        mutpb: float, the probability that an offspring is produced by mutation
+        Output: algorithm_args object
+        """
         self.algorithm = algorithm
         self.pop_size = pop_size
         self.ngen = ngen
@@ -25,12 +33,12 @@ class algorithm_args:
         self.mutpb = mutpb
         return
 
-def cx_music(input_mel1, input_mel2):
+def cx_music(input_mel1: Melody, input_mel2: Melody):
     """
-    Crossover function for music that performs a crossover operation on two given melodies: input_mel1, input_mel2
-    Returns two children child1, child2
-    Child1: [[First half of input_mel2's measures], [Second half of input_mel1's measures]]
-    Child2: [[First half of input_mel1's measures], [Second half of input_mel2's measures]]
+    cx_music() performs a crossover operation on two given melodies
+    Input: input_mel1: Melody, the first melody | input_mel2: Melody, the second melody
+    Output: child1: Melody, [[First half of input_mel2's measures], [Second half of input_mel1's measures]] 
+    child2, Melody: [[First half of input_mel1's measures], [Second half of input_mel2's measures]]
     """
     # Make temp copy
     mel_copy = input_mel1.copy()
@@ -42,11 +50,12 @@ def cx_music(input_mel1, input_mel2):
     
     return input_mel1, input_mel2
 
-def mut_music(input_mel):
+def mut_melody(input_mel: Melody):
     """
-    Mutation function for music that mutates a given melody: input_mel
-    Mutates a melody by 
-    Returns a mutated version of the given melody
+    mut_melody() mutates a given melody. The function iterates over the whole melody
+    performing a coin flip on each note determining if it should be pitch shifted up or down
+    Input: input_mel: Melody, the melody to be mutated
+    Output: input_mel: Melody, the mutated melody
     """
     for measure in input_mel.melody_list:
         for note in measure.measure_list:
@@ -59,7 +68,14 @@ def mut_music(input_mel):
 
     return input_mel, 
 
-def load_midi(population, toolbox, key):
+def load_midi(population: list, toolbox, key: str):
+    """
+    The load_midi() function reads MIDI files entered by the user from the ./midi_out/ directory
+    and adds them to the population
+    Input: population: list, the current deap population list | toolbox: Toolbox, the current deap Toolbox
+    key: str, the key signature the program is using
+    Output: population: list, the updated population with read MIDIs added | pop_size: int, the updated size of the population
+    """
     print("MIDI files saved to ./midi_out/ can be added to the population.")
     print("Note: MIDIs written by this program in previous sessions work best.")
     print("Note: Do not include the folder path.")
@@ -81,17 +97,27 @@ def load_midi(population, toolbox, key):
     return len(population)
 
 def run_genetic_algorithm(rep_obj, alg_args):
+    """
+    The run_genetic_algorithm is the main method of the evolutionary composition project.
+    The method takes in all arguments, then runs the selected genetic algorithm.
+    After ngens, the best MIDIs are written to the ./midi_out/ directory
+    Input: rep_obj: representation, contains the necessary representation arguments
+    alg_args: algorithm_args, contains the necessary genetic algorithm arguments
+    Output: population: list, a deap population containing the last generation of melodies
+    hall_of_fame: deap.tools.support.ParetoFront, deap hall_of_fame object containing melodies the user rated 5/5
+    """
 
     # Fitness func has one weight, maximizing good melodies
     creator.create("FitnessMax", base.Fitness, weights=(1.0, )) # weights must be tuples, but we only have parameter to maximize
     creator.create("Melody", Melody, fitness=creator.FitnessMax)
 
     toolbox = base.Toolbox()
-    toolbox.register("melody", creator.Melody, key=rep_obj.key_signature)
+    # Melody class has to registered to the deap toolbox
+    toolbox.register("melody", creator.Melody, key=rep_obj.key_signature) # the key signature must be passed to generate a melody
     toolbox.register("population", tools.initRepeat, list, toolbox.melody)
 
     toolbox.register("mate", cx_music)
-    toolbox.register("mutate", mut_music)
+    toolbox.register("mutate", mut_melody)
     toolbox.register("select", tools.selNSGA2)
     toolbox.register("evaluate", representation.evaluate_music, rep_obj)
     
