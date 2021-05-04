@@ -350,7 +350,7 @@ def get_new_pitch(prev_pitch: int, interval: int, ascend_or_descend: int) -> int
     return new_pitch
 
 
-def get_new_note_pitch(prev_pitch: int, ascend_or_descend: int):
+def get_new_note_pitch(prev_pitch: int, ascend_or_descend: int, scale):
 
     # Will be called from next_note
     new_pitch = 0
@@ -359,7 +359,7 @@ def get_new_note_pitch(prev_pitch: int, ascend_or_descend: int):
         option = 6
     else:
         # Else the previous pitch could impact new pitch
-        option = random.randint(0, 7)
+        option = random.randint(0, 8)
 
     if option == 0:
         # repeat
@@ -388,28 +388,34 @@ def get_new_note_pitch(prev_pitch: int, ascend_or_descend: int):
 
     elif option == 6:
         # random
-        new_pitch = random.choice(NOTE_RANGE)
+        new_pitch = random.choice(scale)
 
-    elif option == 7:
+    else:
         # rest
         new_pitch = 128
 
     return
 
+def get_new_beat(prev_beats: float) -> float:
+    option = random.randint(0, 5)
+    new_beat = 0.0
+    if option < 1:
+        # Repeat Beat Val
+        new_beat = prev_beats
+    elif option >= 1 and option < 4:
+        new_beat = random.choice([2.0, 1.0])
+    else:
+         new_beat = random.choice([.5, .25])
+
+    return new_beat
+
 def get_new_note_beat(prev_beats: float, measure_beats: float) -> float:
 
     # Will be called from next_note
-
-    option = random.randint(0, 4)
-    new_beat = 0.0
-    if option < 2:
-        # Repeat Beat Val
-        new_beat = prev_beats
-    else:
-         new_beat = random.choice(BEAT_VALUES)
+    new_beat = get_new_beat(prev_beats)
 
     while measure_beats + new_beat > BEATS_P_MEASURE:
-            new_beat = random.choice(BEAT_VALUES)
+        new_beat = get_new_beat(prev_beats)
 
     return new_beat
 
@@ -442,12 +448,12 @@ def get_new_note_velocity(prev_velocity: int, ascend_or_descend: int) -> int:
 
     return new_velocity
 
-def next_note(prev: Note, measure_beats: int):
+def next_note(prev: Note, measure_beats: int, scale: list):
     # Will be called from new_melody
     new_note_list = [0, 0.0, 0] # Note, Beats, Velocity
 
     ascend_or_descend = random.randint(0, 1) # Ascend = 1, Descend = 1
-    new_note_list[0] = get_new_note_pitch(prev.note_pitch, ascend_or_descend)
+    new_note_list[0] = get_new_note_pitch(prev.note_pitch, ascend_or_descend, scale)
     
     new_note_list[1] = get_new_note_beat(prev.beats, measure_beats)
 
@@ -479,7 +485,7 @@ def new_melody(key):
                 prev = note_list[note_index-2]
                 
             # Where new_note returns
-            new_note_list = next_note(prev, measure_beats)
+            new_note_list = next_note(prev, measure_beats, scale)
         
         note_list.append(Note(new_note_list[0], new_note_list[1], new_note_list[2]))
         sum_beats += new_note_list[1]

@@ -104,11 +104,11 @@ def run_genetic_algorithm(rep_obj, alg_args):
     population = toolbox.population(n=alg_args.pop_size)
 
     # Testing line
-    item = 0
-    for mel in population:
-        filename = "new_creator_" + str(item) + ".mid"
-        rep_obj.melody_to_midi(mel, filename, True)
-        item +=1
+    # item = 0
+    # for mel in population:
+    #     filename = "new_creator_" + str(item) + ".mid"
+    #     rep_obj.melody_to_midi(mel, filename, True)
+    #     item +=1
     
     alg_args.pop_size = load_midi(population, toolbox, rep_obj.key_signature)
 
