@@ -396,13 +396,22 @@ def get_new_note_pitch(prev_pitch: int, ascend_or_descend: int):
 
     return
 
-def get_new_note_beat(measure_beats: float) -> float:
+def get_new_note_beat(prev_beats: float, measure_beats: float) -> float:
 
     # Will be called from next_note
-    current_beat = random.choice(BEAT_VALUES)
-    while measure_beats + current_beat > BEATS_P_MEASURE:
-            current_beat = random.choice(BEAT_VALUES)
-    return current_beat
+
+    option = random.randint(0, 4)
+    new_beat = 0.0
+    if option < 2:
+        # Repeat Beat Val
+        new_beat = prev_beats
+    else:
+         new_beat = random.choice(BEAT_VALUES)
+
+    while measure_beats + new_beat > BEATS_P_MEASURE:
+            new_beat = random.choice(BEAT_VALUES)
+
+    return new_beat
 
 def get_new_note_velocity(prev_velocity: int, ascend_or_descend: int) -> int:
     # Will be called from next_note
@@ -440,7 +449,7 @@ def next_note(prev: Note, measure_beats: int):
     ascend_or_descend = random.randint(0, 1) # Ascend = 1, Descend = 1
     new_note_list[0] = get_new_note_pitch(prev.note_pitch, ascend_or_descend)
     
-    new_note_list[1] = get_new_note_beat(measure_beats)
+    new_note_list[1] = get_new_note_beat(prev.beats, measure_beats)
 
     new_note_list[2] = get_new_note_velocity(prev.velocity, ascend_or_descend)
 
