@@ -2,13 +2,14 @@
 
 #from music_data import *
 import argparse
-from representation import representation
+from representation import representation, available_outports
 from gen_alg import run_genetic_algorithm
 from gen_alg import algorithm_args
 
+import mido
 key_sig = ["Cb","Gb","Db","Ab","Eb","Bb","F","C","G","D","A","E","B","F#","C#"]
 parser = argparse.ArgumentParser()
-#parser.add_argument('-o', '--output', action='store_true', help="shows output")
+parser.add_argument('-o', '--outport', type=str, help="Sets the outport device for MIDO. If none is given, you will get the (system specific) default port.")
 parser.add_argument('-v', '--verbosity', action='store_true', help="Outputs program's settings")
 parser.add_argument('-k', '--key_signature', type=str, help="Sets the key signature for the program", choices=key_sig, default="C")
 parser.add_argument('-t', '--tempo', type=int, help="Sets the tempo (in BPM) for the program", choices=range(1, 301), metavar="[0,300]", default=120)
@@ -50,6 +51,7 @@ def main():
     print("Welcome to the evolutionary composition program!")
     args = parser.parse_args()
     if args.verbosity:
+        print("Available outports:", available_outports())
         print("Selected key is", args.key_signature)
         print("The tempo is", args.tempo)
         if args.back_track:
@@ -61,7 +63,7 @@ def main():
         else:
             print("Backing track disabled.")
         
-    rep_obj = representation(args.key_signature, args.tempo, args.back_track, args.arp_or_scale, None)
+    rep_obj = representation(args.key_signature, args.tempo, args.back_track, args.arp_or_scale, args.outport)
     alg_args = algorithm_args(args.genetic_alg, args.popsize, args.ngen, args.mu, args.lambda_, args.cxpb, args.mutpb)
     population, hall_of_fame = run_genetic_algorithm(rep_obj, alg_args)
     return population, hall_of_fame

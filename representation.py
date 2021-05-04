@@ -584,6 +584,9 @@ def save_best_melodies(rep_obj, population, hall_of_fame):
     mel_num = save_list_of_melodies(rep_obj, hall_of_fame, "hall_of_fame", mel_num)
     return
 
+def available_outports():
+    return mido.get_output_names()
+    
 # melody = Melody()
 # #play(melody)
 # melody_to_midi(melody, None, TEMPO, True)
