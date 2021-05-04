@@ -5,18 +5,10 @@ import random
 
 import numpy
 
-from deap import algorithms
-from deap import base
-from deap import creator
-from deap import tools
+from deap import algorithms, base, creator, tools
 
-from representation import representation
-from representation import Melody
-from representation import save_best_melodies
+from representation import representation, save_best_melodies, Melody
 
-#from test import *
-
-POP_SIZE = 6    # Dictates the number of melodies in a population
 
 class algorithm_args:
     def __init__(self, algorithm, pop_size, ngen, mu, lambda_, cxpb, mutpb):
@@ -102,13 +94,6 @@ def run_genetic_algorithm(rep_obj, alg_args):
     toolbox.register("evaluate", representation.evaluate_music, rep_obj)
     
     population = toolbox.population(n=alg_args.pop_size)
-
-    # Testing line
-    # item = 0
-    # for mel in population:
-    #     filename = "new_creator_" + str(item) + ".mid"
-    #     rep_obj.melody_to_midi(mel, filename, True)
-    #     item +=1
     
     alg_args.pop_size = load_midi(population, toolbox, rep_obj.key_signature)
 
@@ -124,92 +109,3 @@ def run_genetic_algorithm(rep_obj, alg_args):
     save_best_melodies(rep_obj, population, hall_of_fame)
     return population, hall_of_fame
 
-def run_program(rep_obj):
-    toolbox.register("evaluate", representation.evaluate_music, rep_obj)
-    print("Begining")
-    NGEN = 2   # Num generations
-    MU = 3      # Num of individuals to select for next generation
-    LAMBDA = 6  # The number of children to produce at each generation
-    CXPB = 0.7  # Probability than an offspring is produced by crossover
-    MUTPB = 0.3 # Probability that an offspring is produced by mutation
-    
-    population = toolbox.population(n=POP_SIZE)
-    hall_of_fame = tools.ParetoFront()
-
-    # Stats
-    # stats = tools.Statistics(lambda ind: ind.fitness.values)
-    # stats.register("avg", numpy.mean, axis=0)
-    # stats.register("std", numpy.std, axis=0)
-    # stats.register("min", numpy.min, axis=0)
-    # stats.register("max", numpy.max, axis=0)
-
-    algorithms.eaMuPlusLambda(population, toolbox, MU, LAMBDA, CXPB, MUTPB, NGEN, halloffame=hall_of_fame)
-
-    print(NGEN, "generations completed.")
-    save_best_melodies(rep_obj, population, hall_of_fame)
-    return population, hall_of_fame
-
-# def main():
-#     print("Begining")
-#     NGEN = 2   # Num generations
-#     MU = 3      # Num of individuals to select for next generation
-#     LAMBDA = 6  # The number of children to produce at each generation
-#     CXPB = 0.7  # Probability than an offspring is produced by crossover
-#     MUTPB = 0.3 # Probability that an offspring is produced by mutation
-    
-#     population = toolbox.population(n=POP_SIZE)
-#     hall_of_fame = tools.ParetoFront()
-
-#     # Stats
-#     # stats = tools.Statistics(lambda ind: ind.fitness.values)
-#     # stats.register("avg", numpy.mean, axis=0)
-#     # stats.register("std", numpy.std, axis=0)
-#     # stats.register("min", numpy.min, axis=0)
-#     # stats.register("max", numpy.max, axis=0)
-
-#     algorithms.eaMuPlusLambda(population, toolbox, MU, LAMBDA, CXPB, MUTPB, NGEN, halloffame=hall_of_fame)
-
-#     print(NGEN, "generations completed.")
-#     save_best_melodies(population, hall_of_fame)
-#     return population, hall_of_fame
-
-
-# if __name__ == "__main__":
-#     main()
-
-
-"""
-Backup/test code things:
-
-the_populatation = toolbox.population(n=POP_SIZE)
-print(the_populatation)
-i = 0
-for mel in the_populatation:
-    print("Playing melody:", i)
-    i+=1
-    tup = evaluate_music(mel)
-    print(tup)
-
-test_mel = Melody()
-print(test_mel)
-print(test_mel.len())
-
-i = 0
-for mel in the_populatation:
-    #print("Melody " + str(i) + " " + str(mel))
-    i+=1
-
-#for mel in the_populatation:
-    #print(evaluate_music(mel))
-
-copy_of = test_mel.copy()
-print("test:", str(test_mel))
-
-print("copy", str(copy_of))
-mel1 = Melody()
-mel2 = Melody()
-cx_music(mel1, mel2)
-print(mel1)
-mut_music(mel1)
-print(mel1)
-"""

@@ -1,12 +1,9 @@
 # Main file for Danny Noe's Evolutionary Music Project
 
-#from music_data import *
 import argparse
 from representation import representation, available_outports
-from gen_alg import run_genetic_algorithm
-from gen_alg import algorithm_args
+from gen_alg import algorithm_args, run_genetic_algorithm
 
-import mido
 key_sig = ["Cb","Gb","Db","Ab","Eb","Bb","F","C","G","D","A","E","B","F#","C#"]
 parser = argparse.ArgumentParser()
 parser.add_argument('-o', '--outport', type=str, help="Sets the outport device for MIDO. If none is given, you will get the (system specific) default port.")
@@ -27,8 +24,7 @@ def str2bool(v):
 
 parser.add_argument('-b', '--back_track', type=str2bool, nargs='?', help="Enables a backing track. Turn on the track with True, False for off.", default=True)
 parser.add_argument('-a', '--arp_or_scale', type=str2bool, nargs='?', help="Sets the backing track to play an ascending arpeggio or scale. True for arp, false for scale", default=True)
-# Todo: Add descending option?
-#parser.add_argument('-m', '--measures_p_melody', type=int, help="Sets the number of measures per each melody")
+
 
 # Algorithms
 gen_alg = parser.add_argument_group('Genetic Algorithms', 'Choose from several different genetic algorithms: eaSimple, eaMuPlusLambda, eaMuCommaLambda')
@@ -43,7 +39,7 @@ gen_al_args = parser.add_argument_group('Genetic Algorithm Arguments',
 gen_al_args.add_argument('--popsize', type=int, help="Sets the number of melodies to generate in a generation.", default=6)
 gen_al_args.add_argument('--ngen', type=int, help="ngen sets the number of generations", default=6)
 gen_al_args.add_argument('--mu', type=int, help="mu sets the numer of individuals to select for the next generation", default=3)
-gen_al_args.add_argument('--lambda_', type=int, help="lambda_ sets number of children to produce at each generation.", default=6)
+gen_al_args.add_argument('--lambda_', type=int, help="lambda_ sets number of children to produce at each generation.", default=10)
 gen_al_args.add_argument('--cxpb', type=float, help="cxpb sets the probability that an offspring is produced by crossover", metavar="[0,1)", default=0.7)
 gen_al_args.add_argument('--mutpb', type=float, help="mutb sets the probability that an offspring is produced by mutation", metavar="[0,1)", default=0.3)
 
