@@ -8,10 +8,20 @@ from music_data import *
 
 class representation:
     """
-    Container class, only one instance is created for the program. Used to store config information
+    The representation class contains all the necessary command-line arguments for the representation.py file.
+    Only one instance is created for the evolutionary composition program.
+    The representation object simplifies passing the representation args
     """
     
     def __init__(self, key_signature: str, tempo: int, back_track: bool, arp_or_scale: bool, outport: str):
+        """
+        Initializes an instance of the representation class with the given command-line args
+        Input: key_signature: str, the key signature for the program | tempo: int, the tempo in beats-per-minute (BPM)
+        back_track: bool, enables the backing track during playback | arp_or_scale: bool, dictates of the backing track plays
+        an arpeggio or scale (True = arp, False = scale) | outport: str, the MIDI port MIDO will send MIDI instructions to.
+        If outport is none, MIDO will attempt to play to the (system specific) default port.
+        Output: Instance of the representation class
+        """
         self.key_signature = key_signature
         self.tempo = tempo
         self.back_track = back_track
@@ -19,8 +29,14 @@ class representation:
         self.outport = outport
         return
          
-    def melody_to_midi(self, melody, filename: str, play: bool):
-        mid = MidiFile(type=1)
+    def melody_to_midi(self, melody, filename: str, play: bool) -> None:
+        """
+        Converts Melody object to a MIDI file which can be played and saved
+        Input: melody: Melody, the melody object to convert to MIDI | filename: str, the filename (path not included) for the MIDI file
+        play: bool, plays the MIDI to the outport (True to play, False to not)
+        Output: saves a MIDI file to disk if filename is Not None
+        """
+        mid = MidiFile(type=1) # Type 1 means a synchronous multi-track MIDI file
         track = MidiTrack(name="Lead")
         mid.tracks.append(track)
         track.append(MetaMessage('key_signature', key=self.key_signature))
@@ -46,27 +62,30 @@ class representation:
         if self.back_track:
             self.add_backing_track(mid)
         
+        # Plays to outport when play = true
         if play:
             outport = mido.open_output(self.outport)
             for message in mid.play():
                 outport.send(message)
         
+        # Saves to the ./midi_out/ if a filename is given
         if filename:
             filename = "./midi_out/" + filename
             mid.save(filename)
 
         return
 
-    def add_backing_track(self, mid: MidiFile):
+    def add_backing_track(self, mid: MidiFile) -> None:
         """
+        Helper function for melody_to_midi(). Adds a backing track a multi-track MIDI file.
+        The backing track is a repeating ascending scale or arpeggio based in the key of the program.
         Input: A multitrack MidiFile object
-        Output: Adds a backing track to the midifile. Adds either a scale or arpeggio
+        Output: The MIDI file with the backing track
         """
         ticks_per_beat = mid.ticks_per_beat
         backing_track = MidiTrack(name="Backing")
         mid.tracks.append(backing_track)
         length_of_background = (int(BEATS_P_MEASURE) * MEASURES_P_MELODY * 2)
-        #print(length_of_background)
         
         scale = SCALES[self.key_signature]
         if self.arp_or_scale:
@@ -96,9 +115,12 @@ class representation:
 
         return
 
-    def evaluate_music(self, input_mel):
+    def evaluate_music(self, input_mel) -> tuple:
         """
-        Evaluation function for music that evaluates a given melody
+        The evaluation function for the genetic algorithm. The given melody is played for the user
+        who rates it on a scale from 0 to 5.
+        Input: input_mel: Melody, the melody that is evaluated by the user
+        Output: usr_rating, : tuple, the user's rating in a fitness tuple (per DEAP's spec)
         """
         print("Playing Melody ...")
         self.melody_to_midi(input_mel, None, True)
@@ -128,14 +150,16 @@ class representation:
 # Note Class
 class Note:
     """
-    The Note class represents a western music note. It has two attributes.
-    A note_pitch which is a string representing the pitch of the note
-    A beats float representing the length of the note. Currently supports: whole, half, quarter, eighth and sixteenth notes
+    The Note class represents a 'note' in music theory. Each Note object has three member variables
+    note_pitch: int, the pitch of the note as a MIDI val (0-127, 128 represents a rest)
+    beats: float, the length of the note [2.0 = half note, 1.0 = quarter, 0.5 = eigth, 0.25 = sixteenth]
+    velocity: int, the amount of "force" used to play the note. This is the note's dynamics [53 = MP, 64 = MF, 80 = F, 96 = FF]
     """
     def __init__(self, note_pitch = None, beats: float = None, velocity: int = None):
         """
         Initializes a Note class member. Can be initialized with specific values or have
         its attributes randomly assigned upon initialization.
+        note_pitch can be given as a str or int, will be stored as an int
         """
 
         if note_pitch is None:
@@ -170,7 +194,13 @@ class Note:
         self.velocity = velocity
         return
 
-    def pitch_shift(self, increment = 1,  up = True):
+    def pitch_shift(self, increment: int = 1,  up: bool = True):
+        """
+        Shifts the pitch of the note up or down by the increment
+        Input: increment: int, the amount of semitones to shift the note by
+        up: bool, True shifts the pitch up, false shifts the pitch down
+        Output: the note_pitch is shifted
+        """
         if up:
             # Shift pitch up # increment semitones
             self.note_pitch += increment
@@ -180,23 +210,25 @@ class Note:
             pass
         return
 
-    def __str__(self):
+    def __str__(self) -> str:
         """
-        To string method for printing notes. For debugging
+        To string method for printing notes.
         """
         return "Pitch: " + MIDI_TO_NOTE[self.note_pitch] + " | Beats: " + str(self.beats) + " | Velocity: " + str(self.velocity)
 
 # Measure Class
 class Measure:
     """
-    The Measure class represents a measure in musical notation. The measure class
-    has on attribute. The member measure_list is a list of Note classes in the measure.
-    The measure class ensures the length of all notes in the measures = BEATS_P_MEASURE
+    The Measure class represents a measure in musical notation. Each measure object has one member variable.
+    measure_list: list, the list of Note objects contained in the measure
+    The amount of Notes a Measure can hold is determined by BEATS_P_MEASURE
     """
     def __init__(self, measure_list: list = None):
         """
-        Measures class objects are initialized by randomly generating notes until the measure_list
-        has reached a length of BEATS_P_MEASURE
+        Initializes a measure class object. 
+        Input: measure_list: list, the list of Note objects contained in the measure
+        If measure_list is None, the Measure is populated with random Notes.
+        Output: Measure class object
         """
         
         self.measure_list = []
@@ -220,9 +252,9 @@ class Measure:
                     self.measure_list.append(note)
             return
         
-    def __str__(self):
+    def __str__(self) -> str:
         """
-        To string method for Measure class. For debugging.
+        To string method for Measure class. 
         """
         to_str = "Notes in Measure:\n"
         for m_note in self.measure_list:
@@ -232,31 +264,38 @@ class Measure:
 # Melody Class
 class Melody:
     """
-    The Melody class represents a musical melody. Melodies contain a list of measures.
+    The Melody class represents a musical melody. Melodies have two member variables.
+    key: str, the key signature of the melody
+    melody_list = None, the list of Measures in the melody.
     The number of measures in a melody are defined by MEASURES_P_MELODY.
-    The Melody class's only attribute is the melody_list list of measures.
     """
-    def __init__(self, key: str, melody_list = None, filename = None):
+    def __init__(self, key: str, melody_list: list = None, filename: str = None):
         """
-        Initalizes a Melody object with MEASURES_P_MELODY amount of measures
+        Initalizes Measure class object.
+        Input: key: str, the key signature of the melody | melody_list: list, the list of Measures in the melody
+        filename: str, the filename for the MIDI file to open
+        If a filename is given, the MIDI will be opened and converted to a Melody object
+        Output: Melody class object
         """
+
         self.key = key
+
+        # Only a filename or melody_list can be given, not both
         if filename is not None and melody_list is not None:
             raise Exception("Error: Only a melody_list or filename can be given")
 
+        # If a filename is given open the MIDI file
         if filename:
             filename = "./midi_out/" + filename
             mid_file = MidiFile(filename)
             self.melody_list = midi_to_melody(mid_file)
             return
 
+        # elif a melody_list is not given, generate a new melody
         elif melody_list is None:
             self.melody_list = new_melody(self.key)
-            # for i in range(MEASURES_P_MELODY):
-            #     #print(i)
-            #     new_measure = Measure()
-            #     self.melody_list.append(new_measure)
 
+        # else verify the given melody list is valid
         else:
             if len(melody_list) > MEASURES_P_MELODY:
                 raise Exception("Error: Melody longer than ", MEASURES_P_MELODY)
@@ -265,21 +304,24 @@ class Melody:
 
         return
 
-    def len(self):
+    def len(self) -> int:
         """
-        Returns the number of measures in the melody as an int
+        Returns the number of measures in the Melody object
         """
         return len(self.melody_list)
 
     def copy(self):
         """
-        Returns a new melody object that is a copy the current melody object
+        Returns a new Melody object that is a copy the current melody object
+        This function is needed for cross-over operations
         """
         return Melody(self.key, melody_list=self.melody_list)
 
-    def cross_mel(self, mel2, change_first_half):
+    def cross_mel(self, mel2, change_first_half: bool) -> None:
         """
-        
+        Helper function for cx_music. Swaps half of the current Melody's measures with mel2's measures.
+        Input: self: Melody, the first melody | mel2: Melody, the second Melody
+        change_first_half: bool, dictates if the first of second half of measures should be swapped (True for first half, False for second)
         """
         if change_first_half:
             # Swap first half of melody for mel2's first half
@@ -300,7 +342,7 @@ class Melody:
 
     def __str__(self):
         """
-        To string method for melody class. Returns a string representation of a melody. For debugging
+        To string method for melody class. Returns a string representation of a Melody.
         """
         to_str = "Melody:\n"
         for msr in self.melody_list:
@@ -328,7 +370,7 @@ def shift_scale(key: str) -> list:
 
 def get_new_pitch(prev_pitch: int, interval: int, ascend_or_descend: int) -> int:
     """
-    Returns a new_pitch based off the prev_pitch
+    Helper function for get_new_note_pitch. Returns a new_pitch based off the prev_pitch
     Input: prev_pitch: int, the previous pitch | interval: int, the interval to shift the new_pitch | ascend_or_descend: int, dictates if the pitch is shifted up or down
     Output: new_pitch: int, shifted pitch
     """
@@ -336,10 +378,10 @@ def get_new_pitch(prev_pitch: int, interval: int, ascend_or_descend: int) -> int
     lower_bound = 60 + interval
     new_pitch = 0
 
-    if prev_pitch > upper_bound:
+    if prev_pitch >= upper_bound:
         # Override the ascend_or_descend val if we are at the bound
         new_pitch = prev_pitch - interval
-    elif prev_pitch < lower_bound:
+    elif prev_pitch <= lower_bound:
         # Override the ascend_or_descend val if we are at the bound
         new_pitch = prev_pitch + interval
     elif ascend_or_descend == 0:
@@ -350,7 +392,7 @@ def get_new_pitch(prev_pitch: int, interval: int, ascend_or_descend: int) -> int
     return new_pitch
 
 
-def get_new_note_pitch(prev_pitch: int, ascend_or_descend: int, scale):
+def get_new_note_pitch(prev_pitch: int, ascend_or_descend: int, scale: list):
 
     # Will be called from next_note
     new_pitch = 0
@@ -394,7 +436,7 @@ def get_new_note_pitch(prev_pitch: int, ascend_or_descend: int, scale):
         # rest
         new_pitch = 128
 
-    return
+    return new_pitch
 
 def get_new_beat(prev_beats: float) -> float:
     option = random.randint(0, 5)

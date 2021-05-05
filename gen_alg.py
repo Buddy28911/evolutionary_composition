@@ -122,6 +122,12 @@ def run_genetic_algorithm(rep_obj, alg_args):
     toolbox.register("evaluate", representation.evaluate_music, rep_obj)
     
     population = toolbox.population(n=alg_args.pop_size)
+
+    num = 0
+    for melody in population:
+        filename = "midi_for_steve" + str(num) + ".mid"
+        rep_obj.melody_to_midi(melody, filename, False)
+        num += 1
     
     alg_args.pop_size = load_midi(population, toolbox, rep_obj.key_signature)
 
