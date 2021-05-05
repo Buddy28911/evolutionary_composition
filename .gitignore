@@ -1,0 +1,8 @@
+.DS_Store
+launch.json
+settings.json
+.vscode/
+__pycache__/
+code_graveyard.py
+test.py
+midi_out/*
