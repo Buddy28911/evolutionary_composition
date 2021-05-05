@@ -447,6 +447,13 @@ def get_new_pitch(prev_pitch: int, ascend_or_descend: int, scale: list) -> int:
 
 
 def get_new_note_pitch(prev_pitch: int, ascend_or_descend: int, scale: list) -> int:
+    """
+    Helper function for next_note(). Generates the next note's pitch by considering the previous note and ascend_or_descend.
+    Verifies that the new pitch within the bounds of the treble clef. 
+    Input: prev_pitch: int, the previous pitch value | ascend_or_descend: int, dictates if the pitch is shifted up or down (0 = descend, 1 = ascend)
+    scale: list, the note pitches available in the current scale
+    Output: new_pitch: int, the pitch of the new note
+    """
     
     new_pitch = get_new_pitch(prev_pitch, ascend_or_descend, scale)
     while MIDI_TO_NOTE[new_pitch] not in NOTE_RANGE:
