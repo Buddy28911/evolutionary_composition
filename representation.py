@@ -372,7 +372,7 @@ def get_new_pitch(prev_pitch: int, interval: int, ascend_or_descend: int) -> int
     """
     Helper function for get_new_note_pitch. Returns a new_pitch based off the prev_pitch
     Input: prev_pitch: int, the previous pitch | interval: int, the interval to shift the new_pitch | ascend_or_descend: int, dictates if the pitch is shifted up or down
-    Output: new_pitch: int, shifted pitch
+    Output: new_pitch: int, the pitch of the new note
     """
     upper_bound = 84 - interval
     lower_bound = 60 + interval
@@ -392,9 +392,14 @@ def get_new_pitch(prev_pitch: int, interval: int, ascend_or_descend: int) -> int
     return new_pitch
 
 
-def get_new_note_pitch(prev_pitch: int, ascend_or_descend: int, scale: list):
-
-    # Will be called from next_note
+def get_new_note_pitch(prev_pitch: int, ascend_or_descend: int, scale: list) -> int:
+    """
+    Helper function for next_note. Uses the previous note's pitch to dictate the pitch of the pitch it generates.
+    Pitchs could also be a rest or a completely random new pitch in the scale, not associated with the previous pitch.
+    Input: prev_pitch: int, the previous pitch value | ascend_or_descend: int, dictates if the pitch is shifted up or down (0 = descend, 1 = ascend)
+    scale: list, the note pitches available in the current scale
+    Output: new_pitch: int, the pitch of the new note
+    """
     new_pitch = 0
     if prev_pitch == 128:
         # If the previous 2 notes are rests, random new note
@@ -439,6 +444,11 @@ def get_new_note_pitch(prev_pitch: int, ascend_or_descend: int, scale: list):
     return new_pitch
 
 def get_new_beat(prev_beats: float) -> float:
+    """
+    Helper function for get_new_note_beat(). Returns a float for the new note's beat value.
+    Input: prev_beats: float, the previous note's length
+    Output: new_beat: float, the new note's length
+    """
     option = random.randint(0, 5)
     new_beat = 0.0
     if option < 1:
@@ -452,8 +462,12 @@ def get_new_beat(prev_beats: float) -> float:
     return new_beat
 
 def get_new_note_beat(prev_beats: float, measure_beats: float) -> float:
-
-    # Will be called from next_note
+    """
+    Helper function for next_note(). Generates the note length of the new note.
+    This function ensures the beat value of the note fits in the current measure.
+    Input: prev_beats: float, the previous note's length | measure_beats: int, current sum of beats in the measure being generated
+    Output: new_beat: float, the new note's length
+    """
     new_beat = get_new_beat(prev_beats)
 
     while measure_beats + new_beat > BEATS_P_MEASURE:
@@ -462,12 +476,16 @@ def get_new_note_beat(prev_beats: float, measure_beats: float) -> float:
     return new_beat
 
 def get_new_note_velocity(prev_velocity: int, ascend_or_descend: int) -> int:
-    # Will be called from next_note
-    
+    """
+    Helper function for next_note(). Generates the velocity of the new note.
+    Considers the previous note's dynamics to determine the volume of the new note.
+    Input: prev_velocity: int, the dynamics of the previous note | ascend_or_descend: int, dictates if the pitch gets louder or quietter (0 = descend, 1 = ascend)
+    Output: new_velocity: int, the dynamics of the new note
+    """
     option = random.randint(0, 4)
     new_velocity = 0
     if option < 2:
-        # sustain dynamic
+        # Sustain dynamic
         new_velocity = prev_velocity
     else:
         # Dynamic change
@@ -490,11 +508,17 @@ def get_new_note_velocity(prev_velocity: int, ascend_or_descend: int) -> int:
 
     return new_velocity
 
-def next_note(prev: Note, measure_beats: int, scale: list):
-    # Will be called from new_melody
+def next_note(prev: Note, measure_beats: int, scale: list) -> list:
+    """
+    Helper function for new_melody(). Generates the next note to be added to the note_list, based off the prior note
+    Input: prev: Note, the previous Note object | measure_beats: int, current sum of beats in the measure being generated
+    scale: list, the note pitches available in the current scale
+    Output: new_note_list: list, the list containing the values for the new note where new_note_list = [Note, Beats, Velocity]
+    """
     new_note_list = [0, 0.0, 0] # Note, Beats, Velocity
 
     ascend_or_descend = random.randint(0, 1) # Ascend = 1, Descend = 1
+
     new_note_list[0] = get_new_note_pitch(prev.note_pitch, ascend_or_descend, scale)
     
     new_note_list[1] = get_new_note_beat(prev.beats, measure_beats)
@@ -503,15 +527,20 @@ def next_note(prev: Note, measure_beats: int, scale: list):
 
     return new_note_list
 
-def new_melody(key):
-    note_list = []
-    sum_beats = 0.0
+def new_melody(key: str) -> list:
+    """
+    Helper function for the Melody class. Generates a fully populated melody_list
+    Input: key: str, the key signature for the melody
+    Output: melody_list: list, the internal melody list populated with MEASURES_P_MELODY amount of measures
+    """
+    note_list = [] # Holds all notes generated
+    sum_beats = 0.0 # Total amount of beats
     max_beats = BEATS_P_MEASURE * MEASURES_P_MELODY * 1.0
     scale = shift_scale(key) # Shift the scale to the treble clef range
     note_index = 0
     new_note_list = [0, 0.0, 0] # Note, Beats, Velocity
-    new_measure = True
-    measure_beats = 0.0
+    measure_beats = 0.0 # Tracks the number of beats in the current measure being generated
+
     while sum_beats < max_beats:
             
         if note_index == 0:
@@ -519,6 +548,7 @@ def new_melody(key):
             new_note_list[0] = scale[random.randint(2, 7)] # Set the starting pitch within the scale
             new_note_list[1] = random.choice([2.0, 1.0]) # Start melody on longer notes
             new_note_list[2] = random.choice([53, 96]) # Start quiet or loud
+
         else:
             # Normal case
             prev = note_list[note_index-1]
@@ -526,7 +556,7 @@ def new_melody(key):
                 # If the previous pitch was a rest, refer to the pitch at note_index-2
                 prev = note_list[note_index-2]
                 
-            # Where new_note returns
+            # Call the next_note function
             new_note_list = next_note(prev, measure_beats, scale)
         
         note_list.append(Note(new_note_list[0], new_note_list[1], new_note_list[2]))
@@ -536,10 +566,16 @@ def new_melody(key):
             measure_beats = 0.0
         note_index += 1
         new_note_list = [0, 0.0, 0] # Note, Beats, Velocity
-        
+
+    # Call the build_melody() function to convert the note_list to a melody_list
     return build_melody(note_list)
 
-def midi_to_melody(mid_file: MidiFile):
+def midi_to_melody(mid_file: MidiFile) -> list:
+    """
+    Helper function for the Melody class init(). Takes the given MIDI file and returns a Melody class object
+    Input: mid_file: MidiFile, the MIDI file object
+    Output: melody_list: list, the internal melody list populated with MEASURES_P_MELODY amount of measures
+    """
     tempo = 0
     key_signature = ""
 
@@ -556,7 +592,7 @@ def midi_to_melody(mid_file: MidiFile):
     # Read all the notes
     note_list = []
     rest = False
-    melody_track = mid_file.tracks[0]
+    melody_track = mid_file.tracks[0] # Only import the lead track, not the backing track
     new_note_list = [0, 0.0, 0] # Note, Beats, Velocity
     new_note = True
 
@@ -567,8 +603,9 @@ def midi_to_melody(mid_file: MidiFile):
             pass
         else:
             if new_note:
+                # Grab the values when the note is turned on
                 new_note_list[0] = message.note
-                new_note_list[2] = message.velocity
+                new_note_list[2] = message.velocity # Especially for velocity
                 new_note = False
             if message.time != 0:
                 if rest:
@@ -577,6 +614,7 @@ def midi_to_melody(mid_file: MidiFile):
 
                 beat_val = message.time
                 # beat_val = note.beats * ticks_per_beat
+                # so note.beats = beat_vale / ticks_per_beat
                 ticks_per_beat = mid_file.ticks_per_beat
                 beats = beat_val / ticks_per_beat
                 
@@ -588,11 +626,15 @@ def midi_to_melody(mid_file: MidiFile):
             elif message.type == 'note_off':
                 rest = True
 
-    #print(note_list)
-
     return build_melody(note_list)
 
-def build_melody(note_list: list):
+def build_melody(note_list: list) -> list:
+    """
+    Helper function for the Melody class init(). Called by midi_to_melody() and new_melody().
+    Takes a given note_list and returns a melody_list populated with MEASURES_P_MELODY amount of measures
+    Input: note_list: list, list of note objects
+    Output: melody_list: list, the internal melody list populated with MEASURES_P_MELODY amount of measures
+    """
     measure_list = []
     measure_beats = 0.0
     sum_beats = 0.0
@@ -609,22 +651,38 @@ def build_melody(note_list: list):
             measure_list = []
 
     if sum_beats > max_beats:
-        raise Exception("Error: Beats in MID exceed ", max_beats)
+        raise Exception("Error: Beats in note_list exceed ", max_beats)
     else:
         return melody_list
             
-def save_list_of_melodies(rep_obj, the_mel_list, group_name, mel_num):
+def save_list_of_melodies(rep_obj, the_mel_list: list, group_name: str, mel_num: int) -> int:
+    """
+    Helper function for save_best_melodies(). Uses the given rep_obj to write the melodies in the given list to disk.
+    Returns the updated mel_num
+    Input: rep_obj: representation, the program's representation object instance | the_mel_list: list, the list of melodies
+    group_name: str, the name of the group or list | mel_num: int, the number of melodies written so far
+    Output: mel_num: int, the updated number of melodies written so far
+    """
     for melody in the_mel_list:
         filename = group_name + str(mel_num) + ".mid"
         rep_obj.melody_to_midi(melody, filename, False)
         mel_num += 1
     return mel_num
 
-def save_best_melodies(rep_obj, population, hall_of_fame):
+def save_best_melodies(rep_obj, population, hall_of_fame) -> None:
+    """
+    Helper function for run_genetic_algorithm(). Writes the best melodies generated by the program to the ./midi_out/ directory
+    Input: rep_obj: representation, the program's representation object instance | population: list, a deap population containing the last generation of melodies
+    hall_of_fame: deap.tools.support.ParetoFront, deap hall_of_fame object containing melodies the user rated 5/5
+    Output: Nothing is returned. MIDIs are written to ./midi_out/
+    """
     mel_num = 0
     mel_num = save_list_of_melodies(rep_obj, population, "population", mel_num)
     mel_num = save_list_of_melodies(rep_obj, hall_of_fame, "hall_of_fame", mel_num)
     return
 
-def available_outports():
+def available_outports() -> list:
+    """
+    Returns a list of the available outports that MIDO can access.
+    """
     return mido.get_output_names()
