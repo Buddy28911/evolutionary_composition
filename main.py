@@ -1,4 +1,7 @@
-# Main file for Danny Noe's Evolutionary Music Project
+# main.py
+# By Danny Noe
+# Evolutionary Composition
+# main.py is responsible for initializing the program, as well as handling the command-line arguments
 
 import argparse
 from representation import representation, available_outports
@@ -10,7 +13,6 @@ parser.add_argument('-o', '--outport', type=str, help="Sets the outport device f
 parser.add_argument('-v', '--verbosity', action='store_true', help="Outputs program's settings")
 parser.add_argument('-k', '--key_signature', type=str, help="Sets the key signature for the program", choices=key_sig, default="C")
 parser.add_argument('-t', '--tempo', type=int, help="Sets the tempo (in BPM) for the program", choices=range(1, 301), metavar="[0,300]", default=120)
-
 
 def str2bool(v):
     if isinstance(v, bool):

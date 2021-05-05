@@ -1,5 +1,6 @@
 # music_date.py
 # Danny Noe
+# Evolutionary Composition
 # music_data.py houses constant data used by representation.py. This file has no executable code
 
 ##############################

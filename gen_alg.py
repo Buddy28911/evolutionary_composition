@@ -1,21 +1,19 @@
-# Genetic Algorithm file
+# gen_alg.py
 # By Danny Noe
+# Evolutionary Composition
+# gen_alg.py contains the code for the genetic algorithm data and functions.
 
 import random
-
 import numpy
-
 from deap import algorithms, base, creator, tools
-
 from representation import representation, save_best_melodies, Melody
-
 
 class algorithm_args:
     """
     The algorithm_args object contains all of the algorithm arguments recieved on the command-line.
     algorithm_args simplifies number of arguments that need to be sent to run_program()
     """
-    def __init__(self, algorithm: str, pop_size: int, ngen: int, mu: int, lambda_: int, cxpb: float, mutpb: float):
+    def __init__(self, algorithm: str, pop_size: int, ngen: int, mu: int, lambda_: int, cxpb: float, mutpb: float) -> None:
         """
         Initializes the algorithm_args object with arguments given on the command-line
         Input: algorithm: str, the name of the genetic algorithm | pop_size: int, the size of the initial population
@@ -33,7 +31,7 @@ class algorithm_args:
         self.mutpb = mutpb
         return
 
-def cx_music(input_mel1: Melody, input_mel2: Melody):
+def cx_music(input_mel1: Melody, input_mel2: Melody) -> tuple:
     """
     cx_music() performs a crossover operation on two given melodies
     Input: input_mel1: Melody, the first melody | input_mel2: Melody, the second melody
@@ -50,7 +48,7 @@ def cx_music(input_mel1: Melody, input_mel2: Melody):
     
     return input_mel1, input_mel2
 
-def mut_melody(input_mel: Melody):
+def mut_melody(input_mel: Melody) -> tuple:
     """
     mut_melody() mutates a given melody. The function iterates over the whole melody
     performing a coin flip on each note determining if it should be pitch shifted up or down
@@ -68,7 +66,7 @@ def mut_melody(input_mel: Melody):
 
     return input_mel, 
 
-def load_midi(population: list, toolbox, key: str):
+def load_midi(population: list, toolbox, key: str) -> int:
     """
     The load_midi() function reads MIDI files entered by the user from the ./midi_out/ directory
     and adds them to the population
@@ -96,7 +94,7 @@ def load_midi(population: list, toolbox, key: str):
             
     return len(population)
 
-def run_genetic_algorithm(rep_obj, alg_args):
+def run_genetic_algorithm(rep_obj, alg_args) -> tuple:
     """
     The run_genetic_algorithm is the main method of the evolutionary composition project.
     The method takes in all arguments, then runs the selected genetic algorithm.

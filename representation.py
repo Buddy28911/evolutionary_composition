@@ -1,5 +1,7 @@
-# Representation.py
+# representation.py
 # By Danny Noe
+# Evolutionary Composition
+# representation.py is responsible for the musical representation data. 
 
 import random
 import mido
@@ -368,9 +370,9 @@ def shift_scale(key: str) -> list:
 
     return shifted_scale
 
-def get_new_pitch(prev_pitch: int, interval: int, ascend_or_descend: int) -> int:
+def calculate_pitch(prev_pitch: int, interval: int, ascend_or_descend: int) -> int:
     """
-    Helper function for get_new_note_pitch. Returns a new_pitch based off the prev_pitch
+    Helper function for get_new_pitch(). Returns a new_pitch based off the prev_pitch
     Input: prev_pitch: int, the previous pitch | interval: int, the interval to shift the new_pitch | ascend_or_descend: int, dictates if the pitch is shifted up or down
     Output: new_pitch: int, the pitch of the new note
     """
@@ -391,10 +393,9 @@ def get_new_pitch(prev_pitch: int, interval: int, ascend_or_descend: int) -> int
 
     return new_pitch
 
-
-def get_new_note_pitch(prev_pitch: int, ascend_or_descend: int, scale: list) -> int:
+def get_new_pitch(prev_pitch: int, ascend_or_descend: int, scale: list) -> int:
     """
-    Helper function for next_note. Uses the previous note's pitch to dictate the pitch of the pitch it generates.
+    Helper function for get_new_note_pitch(). Uses the previous note's pitch to dictate the pitch of the pitch it generates.
     Pitchs could also be a rest or a completely random new pitch in the scale, not associated with the previous pitch.
     Input: prev_pitch: int, the previous pitch value | ascend_or_descend: int, dictates if the pitch is shifted up or down (0 = descend, 1 = ascend)
     scale: list, the note pitches available in the current scale
@@ -413,33 +414,43 @@ def get_new_note_pitch(prev_pitch: int, ascend_or_descend: int, scale: list) -> 
         new_pitch = prev_pitch
     elif option == 1:
         # step
-        new_pitch = get_new_pitch(prev_pitch, 2, ascend_or_descend)
+        new_pitch = calculate_pitch(prev_pitch, 2, ascend_or_descend)
 
     elif option == 2:
         # third
-        new_pitch = get_new_pitch(prev_pitch, 3, ascend_or_descend)
+        new_pitch = calculate_pitch(prev_pitch, 3, ascend_or_descend)
 
     elif option == 3:
         # skip
         skip = random.randint(1, 4)
-        new_pitch = get_new_pitch(prev_pitch, skip, ascend_or_descend)
+        new_pitch = calculate_pitch(prev_pitch, skip, ascend_or_descend)
 
     elif option == 4:
         # Octave
-        new_pitch = get_new_pitch(prev_pitch, 12, ascend_or_descend)
+        new_pitch = calculate_pitch(prev_pitch, 12, ascend_or_descend)
 
     elif option == 5:
         # jump
         jump = random.randint(4, 14)
-        new_pitch = get_new_pitch(prev_pitch, jump, ascend_or_descend)
+        new_pitch = calculate_pitch(prev_pitch, jump, ascend_or_descend)
 
     elif option == 6:
         # random
-        new_pitch = random.choice(scale)
+        pitch_str = random.choice(scale)
+        new_pitch = NOTE_TO_MIDI[pitch_str]
 
     else:
         # rest
         new_pitch = 128
+
+    return new_pitch
+
+
+def get_new_note_pitch(prev_pitch: int, ascend_or_descend: int, scale: list) -> int:
+    
+    new_pitch = get_new_pitch(prev_pitch, ascend_or_descend, scale)
+    while MIDI_TO_NOTE[new_pitch] not in NOTE_RANGE:
+        new_pitch = get_new_pitch(prev_pitch, ascend_or_descend, scale)
 
     return new_pitch
 
