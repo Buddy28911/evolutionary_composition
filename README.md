@@ -39,3 +39,8 @@ To run the program with no command-line args use
 python3 main.py
 ```
 
+To learn about the various command-line arguments use
+
+```
+python3 main.py -h -v
+```
