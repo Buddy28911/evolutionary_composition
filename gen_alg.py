@@ -120,12 +120,6 @@ def run_genetic_algorithm(rep_obj, alg_args) -> tuple:
     toolbox.register("evaluate", representation.evaluate_music, rep_obj)
     
     population = toolbox.population(n=alg_args.pop_size)
-
-    num = 0
-    for melody in population:
-        filename = "midi_for_steve" + str(num) + ".mid"
-        rep_obj.melody_to_midi(melody, filename, False)
-        num += 1
     
     alg_args.pop_size = load_midi(population, toolbox, rep_obj.key_signature)
 
@@ -139,4 +133,5 @@ def run_genetic_algorithm(rep_obj, alg_args) -> tuple:
         algorithms.eaSimple(population, toolbox, alg_args.cxpb, alg_args.mutpb, alg_args.ngen, None, hall_of_fame)
     
     save_best_melodies(rep_obj, population, hall_of_fame)
+    print("The best melodies have been saved to the ./midi_out/ directory.")
     return population, hall_of_fame

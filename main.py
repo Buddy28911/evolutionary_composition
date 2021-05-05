@@ -12,7 +12,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-o', '--outport', type=str, help="Sets the outport device for MIDO. If none is given, you will get the (system specific) default port.")
 parser.add_argument('-v', '--verbosity', action='store_true', help="Outputs program's settings")
 parser.add_argument('-k', '--key_signature', type=str, help="Sets the key signature for the program", choices=key_sig, default="C")
-parser.add_argument('-t', '--tempo', type=int, help="Sets the tempo (in BPM) for the program", choices=range(1, 301), metavar="[0,300]", default=120)
+parser.add_argument('-t', '--tempo', type=int, help="Sets the tempo (in BPM) for the program", choices=range(2, 301), metavar="[2,300]", default=120)
 
 def str2bool(v):
     if isinstance(v, bool):
